@@ -8,8 +8,8 @@
 
 ### Setup ###
 
-* Python
-* Tensorflow
+* Python 3.4
+* Tensorflow 1.0
 * Keras
-* GPUs
+* GPUs (TITAN X)
 
