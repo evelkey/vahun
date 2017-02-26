@@ -8,8 +8,8 @@
 
 ### Setup ###
 
-*Python
-*Tensorflow
-*Keras
-*GPUs
+* Python
+* Tensorflow
+* Keras
+* GPUs
 
