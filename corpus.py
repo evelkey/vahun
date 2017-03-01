@@ -145,3 +145,7 @@ class Corpus:
         for item in self.get_stat(corpus).most_common(count):
             self.most_common.append(item[0])
         return self.most_common
+    
+    def get_random_block_from_data(self,batch_size):
+        start_index = np.random.randint(0, len(data) - batch_size)
+        return self.feature_tensor[start_index:(start_index + batch_size)]
