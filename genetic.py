@@ -1,8 +1,7 @@
 from random import randint, random
 import collections
 from autoencoders import Autoencoder_ffnn
-from genetic import experiment
-from genetic import evolution
+import tensorflow as tf
 from tools import Timer
 
 class experiment:
@@ -19,15 +18,22 @@ class experiment:
         
 class evolution:
     
-    def __init__(self,x_train,x_test,population_size,encoder,dim,repeat_runs=2,epoch=30,batch=512,disp_freq=1):
+    def __init__(self,x_train,x_test,
+                 population_size,encoder,
+                 dim,config,logger,repeat_runs=3,
+                 epoch=30,batch=512,disp_freq=1):
         """
         """
+        self.timer=Timer()
+        self.logger=logger
+        
         self.encoded_width=encoder
         self.dim=dim
         self.min=10
         self.max=200
         self.repeat_runs=repeat_runs
         
+        self.config=config
         self.training_epochs = epoch
         self.batch_size = batch
         self.display_step = disp_freq
@@ -60,22 +66,33 @@ class evolution:
         """
         count: the number of individuals in the population
         """
-        self.sess = tf.Session(config=config)
-        
+        self.sess = tf.Session(config=self.config)
+        self.timer.add("gen")
+        print("Initializing new population")
         population=[]
+        self.logger.logline("population.log",["len","weigths...->"])
         for x in range(count):
-            exp=experiment(out_dim=self.dim,minw=self.min,maxw=self.max,encoded_width=self.encoded_width)
-            population.append(Autoencoder_ffnn(experiment=exp,tf_session=self.sess,inputdim=self.dim,layerlist=exp.weights,
+            exp=experiment(out_dim=self.dim,minw=self.min,
+                           maxw=self.max,
+                           encoded_width=self.encoded_width)
+            population.append(Autoencoder_ffnn(experiment=exp,
+                                               tf_session=self.sess,inputdim=self.dim,
+                                               layerlist=exp.weights,
                                                encode_index=int(exp.len/2-1),
                                                optimizer = self.optimizer))
+            self.logger.logline("population.log",[population[x].experiment.len]+\
+                                population[x].experiment.weights)
+        print("new gen took: ",self.timer.get("gen")," s")
+        
         return population
     
     def new_generation(self,experiments):
         """
         
         """
+        self.timer.add("new")
         self.sess.close()
-        self.sess = tf.Session(config=config)
+        self.sess = tf.Session(config=self.config)
         
         print("New generation is being created.")
         
@@ -85,6 +102,7 @@ class evolution:
             population.append(Autoencoder_ffnn(experiment=experiments[x],tf_session=self.sess,inputdim=self.dim,layerlist=experiments[x].weights,
                                                encode_index=int(experiments[x].len/2-1),
                                                optimizer = self.optimizer))
+        print("new gen took: ",self.timer.get("new")," s")
         return population
     
     def train_population(self):
@@ -92,7 +110,7 @@ class evolution:
         for individual in self.population:
             sum_cost=0
             for i in range(self.repeat_runs): #average the model's fitness
-                individual.train(self.x_train,x_test,self.batchsize,self.maxepoch)
+                individual.train(self.x_train,self.x_test,self.batchsize,self.maxepoch)
                 sum_cost+=individual.calc_total_cost(self.x_test)
             self.population_fitness.append(sum_cost/self.repeat_runs)
         return self.population_fitness

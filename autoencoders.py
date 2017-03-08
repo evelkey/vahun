@@ -1,5 +1,7 @@
 import scipy
 import tensorflow as tf
+import numpy as np
+import collections
 
 class Autoencoder_ffnn():
     def __init__(self,experiment,tf_session, inputdim,layerlist,encode_index,optimizer = tf.train.AdamOptimizer(),nonlinear=tf.nn.relu):
