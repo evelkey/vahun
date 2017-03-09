@@ -20,8 +20,8 @@ class evolution:
     
     def __init__(self,x_train,x_test,
                  population_size,encoder,
-                 dim,config,logger,repeat_runs=3,
-                 epoch=30,batch=512,disp_freq=1):
+                 dim,config,logger,repeat_runs=2,
+                 epoch=50,batch=512,disp_freq=20):
         """
         """
         self.timer=Timer()
@@ -29,8 +29,8 @@ class evolution:
         
         self.encoded_width=encoder
         self.dim=dim
-        self.min=10
-        self.max=200
+        self.min=encoder+8
+        self.max=dim
         self.repeat_runs=repeat_runs
         
         self.config=config
@@ -42,7 +42,8 @@ class evolution:
         
         self.learnrate=0.001
         self.batchsize=512
-        self.maxepoch=100
+        self.maxepoch=50
+        self.nonlinear=tf.nn.relu
         self.optimizer=tf.train.AdamOptimizer(learning_rate = self.learnrate)
         
         
@@ -56,7 +57,8 @@ class evolution:
         
         self.target=0
         
-
+        self.logger.logline("details.log",["nonlinear",self.nonlinear])
+        self.logger.logline("details.log",["population_size",self.population_size])
         
     def ekv(self,e):
         return e
@@ -76,10 +78,13 @@ class evolution:
                            maxw=self.max,
                            encoded_width=self.encoded_width)
             population.append(Autoencoder_ffnn(experiment=exp,
-                                               tf_session=self.sess,inputdim=self.dim,
+                                               logger=self.logger,
+                                               tf_session=self.sess,
+                                               inputdim=self.dim,
                                                layerlist=exp.weights,
                                                encode_index=int(exp.len/2-1),
-                                               optimizer = self.optimizer))
+                                               optimizer = self.optimizer,
+                                               nonlinear=self.nonlinear))
             self.logger.logline("population.log",[population[x].experiment.len]+\
                                 population[x].experiment.weights)
         print("new gen took: ",self.timer.get("gen")," s")
@@ -98,10 +103,13 @@ class evolution:
         
         population=[]
         for x in range(len(experiments)):
-    
-            population.append(Autoencoder_ffnn(experiment=experiments[x],tf_session=self.sess,inputdim=self.dim,layerlist=experiments[x].weights,
+            population.append(Autoencoder_ffnn(experiment=experiments[x],
+                                               logger=self.logger,tf_session=self.sess,
+                                               inputdim=self.dim,
+                                               layerlist=experiments[x].weights,
                                                encode_index=int(experiments[x].len/2-1),
-                                               optimizer = self.optimizer))
+                                               optimizer = self.optimizer,
+                                               nonlinear=self.nonlinear))
         print("new gen took: ",self.timer.get("new")," s")
         return population
     

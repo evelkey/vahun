@@ -4,16 +4,23 @@ import numpy as np
 import collections
 
 class Autoencoder_ffnn():
-    def __init__(self,experiment,tf_session, inputdim,layerlist,encode_index,optimizer = tf.train.AdamOptimizer(),nonlinear=tf.nn.relu):
+    def __init__(self,experiment,
+                 tf_session, inputdim,
+                 logger,
+                 layerlist,encode_index,
+                 optimizer = tf.train.AdamOptimizer(),
+                 nonlinear=tf.nn.relu,
+                 disp_step=20):
         """
         """
         self.experiment=experiment
+        self.logger=logger
         
         self.layerlist=layerlist
         self.layernum=len(layerlist)
         self.n_input = inputdim
         self.encode_index=encode_index
-        self.display_step=10
+        self.display_step=disp_step
 
         network_weights = self._initialize_weights()
         self.weights = network_weights  
@@ -80,32 +87,42 @@ class Autoencoder_ffnn():
     def train(self,X_train,X_test,batch_size,max_epochs):
         breaker=False
         testlog=collections.deque(maxlen=30)
+        self.logger.logline("train.log",["START"])
+        self.logger.logline("train.log",["config"]+self.layerlist)
         
-        for epoch in range(max_epochs):
-            avg_cost = 0.
-            total_batch = int(len(X_train) / batch_size)
-            # Loop over all batches
-            for i in range(total_batch):
-                batch_xs = self.get_random_block_from_data(X_train, batch_size)
-                cost = self.partial_fit(batch_xs)
-                avg_cost += cost/ batch_size
-                
+        total_batch = int(max_epochs*len(X_train) / batch_size)
+        # Loop over all batches
+        for i in range(total_batch):
+            batch_xs = self.get_random_block_from_data(X_train, batch_size)
+            cost = self.partial_fit(batch_xs)
+            #avg_cost += cost/ batch_size
+            if i % self.display_step==0:
+                testloss=self.calc_total_cost(X_test)
                 #early stop
-                testlog.append(self.calc_total_cost(X_test))
-                for i in range(8):
-                    if len(testlog)>20 and testlog[-i]>=testlog[-10-i]*0.995:
-                        breaker=True
-                    else:
-                        breaker=False
+                self.logger.logline("train.log",["batch",i,"test_loss",testloss])
+                testlog.append(testloss)
+
+                if len(testlog)>20:
+                    breaker=True
+                    for j in range(10):
+                         if testlog[-j]<testlog[-10-j]:
+                            breaker=False
+                else:
+                    breaker=False
+
                 if breaker:
-                    print("STOPPED OVERFIT")
+                    self.logger.logline("early_stop.log",["STOPPED"])
+                    self.logger.logline("early_stop.log",["survived",i])
+                    self.logger.logline("early_stop.log",["config"]+self.layerlist)
+                    self.logger.logline("early_stop.log",["train_cost",self.calc_total_cost(X_train)])
+                    self.logger.logline("early_stop.log",["test_last_results"]+list(testlog))
                     break
-            # Display logs per epoch step
-            if epoch % self.display_step == 0:
-                print ("Epoch:", '%04d' % (epoch + 1), "cost=", "{:.9f}".format(avg_cost))
-            if breaker:
-                break
-                
+        self.logger.logline("train.log",["STOP"])
+        self.logger.logline("full_trained.log",["train_cost",
+                             self.calc_total_cost(X_train)]+\
+                             ["test_cost",self.calc_total_cost(X_test)]+\
+                             ["config"]+self.layerlist)
+                          
     def get_random_block_from_data(self,data, batch_size):
         start_index = np.random.randint(0, len(data) - batch_size)
         return data[start_index:(start_index + batch_size)]
