@@ -1,0 +1,8 @@
+train_cost	377613.0	test_cost	96136.8	config	273	275	326	254	60	121	278	326	233	360
+train_cost	352775.0	test_cost	89876.1	config	273	275	326	254	60	121	278	326	233	360
+train_cost	528504.0	test_cost	133991.0	config	105	60	263	360
+train_cost	532156.0	test_cost	134927.0	config	105	60	263	360
+train_cost	831302.0	test_cost	209236.0	config	241	349	294	60	168	255	97	360
+train_cost	838098.0	test_cost	210935.0	config	241	349	294	60	168	255	97	360
+train_cost	600558.0	test_cost	151740.0	config	60	360
+train_cost	599106.0	test_cost	151413.0	config	60	360
