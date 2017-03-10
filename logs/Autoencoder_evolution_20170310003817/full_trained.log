@@ -1,0 +1,124 @@
+train_cost	101040.0	test_cost	25581.2	config	20	360
+train_cost	99761.9	test_cost	25274.0	config	20	360
+train_cost	88311.6	test_cost	22449.8	config	89	254	256	53	20	76	305	104	294	360
+train_cost	75768.8	test_cost	19295.9	config	89	254	256	53	20	76	305	104	294	360
+train_cost	94745.2	test_cost	24063.2	config	320	330	44	20	221	168	188	360
+train_cost	86358.0	test_cost	22067.8	config	320	330	44	20	221	168	188	360
+train_cost	106133.0	test_cost	26874.2	config	153	116	282	20	71	121	302	360
+train_cost	99654.3	test_cost	25372.0	config	153	116	282	20	71	121	302	360
+train_cost	104056.0	test_cost	26392.2	config	235	20	160	360
+train_cost	98711.6	test_cost	25095.1	config	235	20	160	360
+train_cost	108241.0	test_cost	27392.8	config	337	95	141	20	81	148	230	360
+train_cost	103222.0	test_cost	26204.2	config	337	95	141	20	81	148	230	360
+train_cost	99102.2	test_cost	25124.8	config	322	20	187	360
+train_cost	87911.0	test_cost	22418.5	config	322	20	187	360
+train_cost	107337.0	test_cost	27181.3	config	327	223	68	238	20	259	307	307	152	360
+train_cost	90367.9	test_cost	23069.7	config	327	223	68	238	20	259	307	307	152	360
+train_cost	88676.4	test_cost	22554.1	config	266	238	132	20	196	100	248	360
+train_cost	75830.9	test_cost	19489.5	config	266	238	132	20	196	100	248	360
+train_cost	103068.0	test_cost	26152.6	config	248	321	20	113	231	360
+train_cost	96386.3	test_cost	24609.1	config	248	321	20	113	231	360
+train_cost	182669.0	test_cost	45773.4	config	284	253	126	91	20	290	278	243	143	360
+train_cost	183046.0	test_cost	45814.2	config	284	253	126	91	20	290	278	243	143	360
+train_cost	91193.4	test_cost	23101.9	config	106	97	20	139	180	360
+train_cost	81348.4	test_cost	20685.5	config	106	97	20	139	180	360
+train_cost	101785.0	test_cost	25817.7	config	20	360
+train_cost	101364.0	test_cost	25677.7	config	20	360
+train_cost	98302.9	test_cost	24892.7	config	20	360
+train_cost	98273.8	test_cost	24896.4	config	20	360
+train_cost	99678.5	test_cost	25262.8	config	102	343	207	20	79	85	278	360
+train_cost	91047.9	test_cost	23153.7	config	102	343	207	20	79	85	278	360
+train_cost	85157.0	test_cost	21665.7	config	267	172	54	20	209	320	276	360
+train_cost	73283.3	test_cost	18728.5	config	267	172	54	20	209	320	276	360
+train_cost	122195.0	test_cost	31001.3	config	250	163	337	55	20	128	194	349	30	360
+train_cost	121916.0	test_cost	30924.6	config	250	163	337	55	20	128	194	349	30	360
+train_cost	103766.0	test_cost	26322.0	config	215	20	180	360
+train_cost	96943.4	test_cost	24616.9	config	215	20	180	360
+train_cost	82741.5	test_cost	20948.9	config	43	20	316	360
+train_cost	64701.0	test_cost	16477.3	config	43	20	316	360
+train_cost	115522.0	test_cost	29248.6	config	357	20	135	360
+train_cost	108369.0	test_cost	27453.8	config	357	20	135	360
+train_cost	120610.0	test_cost	30565.6	config	347	77	20	232	184	360
+train_cost	116659.0	test_cost	29544.7	config	347	77	20	232	184	360
+train_cost	183020.0	test_cost	45832.6	config	151	118	319	20	273	317	228	360
+train_cost	182759.0	test_cost	45856.8	config	151	118	319	20	273	317	228	360
+train_cost	93633.3	test_cost	23778.3	config	165	286	152	215	20	31	62	105	154	360
+train_cost	84960.3	test_cost	21632.6	config	165	286	152	215	20	31	62	105	154	360
+train_cost	106894.0	test_cost	27078.8	config	235	121	354	165	20	76	246	138	155	360
+train_cost	99252.1	test_cost	25296.2	config	235	121	354	165	20	76	246	138	155	360
+train_cost	92300.6	test_cost	23422.8	config	111	352	194	45	20	111	167	288	126	360
+train_cost	81740.1	test_cost	20795.2	config	111	352	194	45	20	111	167	288	126	360
+train_cost	101356.0	test_cost	25720.8	config	124	100	20	193	117	360
+train_cost	93563.8	test_cost	23806.4	config	124	100	20	193	117	360
+train_cost	96477.8	test_cost	24507.0	config	172	221	261	20	88	85	99	360
+train_cost	88445.4	test_cost	22576.9	config	172	221	261	20	88	85	99	360
+train_cost	86771.1	test_cost	22024.7	config	89	73	149	99	20	183	138	173	125	360
+train_cost	75051.0	test_cost	19063.9	config	89	73	149	99	20	183	138	173	125	360
+train_cost	103992.0	test_cost	26364.7	config	356	299	20	54	86	360
+train_cost	95797.9	test_cost	24339.5	config	356	299	20	54	86	360
+train_cost	87534.4	test_cost	22306.6	config	295	20	281	360
+train_cost	77752.1	test_cost	19974.8	config	295	20	281	360
+train_cost	103631.0	test_cost	26312.1	config	304	242	239	20	33	123	37	360
+train_cost	98051.1	test_cost	24901.0	config	304	242	239	20	33	123	37	360
+train_cost	100344.0	test_cost	25402.8	config	20	360
+train_cost	99644.8	test_cost	25251.2	config	20	360
+train_cost	98174.3	test_cost	24905.7	config	20	360
+train_cost	98029.8	test_cost	24840.8	config	20	360
+train_cost	87767.4	test_cost	22299.9	config	354	224	60	20	177	228	249	360
+train_cost	75775.9	test_cost	19396.4	config	354	224	60	20	177	228	249	360
+train_cost	96690.5	test_cost	24562.1	config	247	123	235	20	217	78	241	360
+train_cost	87250.9	test_cost	22367.9	config	247	123	235	20	217	78	241	360
+train_cost	182646.0	test_cost	45758.0	config	113	128	278	319	20	330	271	102	90	360
+train_cost	182385.0	test_cost	45727.8	config	113	128	278	319	20	330	271	102	90	360
+train_cost	105586.0	test_cost	26705.7	config	99	299	20	201	198	360
+train_cost	92133.6	test_cost	23340.4	config	99	299	20	201	198	360
+train_cost	101827.0	test_cost	25784.2	config	20	360
+train_cost	101652.0	test_cost	25749.9	config	20	360
+train_cost	82338.4	test_cost	20945.3	config	338	41	141	93	20	109	331	173	335	360
+train_cost	69845.7	test_cost	17858.2	config	338	41	141	93	20	109	331	173	335	360
+train_cost	86110.2	test_cost	21850.1	config	32	42	33	20	183	315	223	360
+train_cost	73473.4	test_cost	18647.7	config	32	42	33	20	183	315	223	360
+train_cost	78560.7	test_cost	19941.1	config	43	20	316	360
+train_cost	67937.8	test_cost	17365.2	config	43	20	316	360
+train_cost	89848.2	test_cost	22848.6	config	338	41	141	93	20	109	331	173	335	360
+train_cost	80277.9	test_cost	20527.3	config	338	41	141	93	20	109	331	173	335	360
+train_cost	90293.6	test_cost	22982.6	config	267	172	54	20	209	320	276	360
+train_cost	79407.3	test_cost	20364.4	config	267	172	54	20	209	320	276	360
+train_cost	83051.9	test_cost	21032.0	config	32	42	33	20	183	315	223	360
+train_cost	68346.6	test_cost	17334.7	config	32	42	33	20	183	315	223	360
+train_cost	87084.7	test_cost	22076.0	config	89	73	149	99	20	183	138	173	125	360
+train_cost	78821.8	test_cost	19970.7	config	89	73	149	99	20	183	138	173	125	360
+train_cost	84621.1	test_cost	21553.2	config	354	224	60	20	177	228	249	360
+train_cost	72653.9	test_cost	18648.1	config	354	224	60	20	177	228	249	360
+train_cost	86808.7	test_cost	22101.9	config	89	254	256	53	20	76	305	104	294	360
+train_cost	75460.6	test_cost	19255.2	config	89	254	256	53	20	76	305	104	294	360
+train_cost	117456.0	test_cost	29726.8	config	266	238	132	20	196	100	248	360
+train_cost	114025.0	test_cost	28862.3	config	266	238	132	20	196	100	248	360
+train_cost	104580.0	test_cost	26489.4	config	106	97	20	139	180	360
+train_cost	97896.2	test_cost	24951.0	config	106	97	20	139	180	360
+train_cost	89424.2	test_cost	22739.0	config	354	224	60	20	109	331	173	335	360
+train_cost	74967.4	test_cost	19223.5	config	354	224	60	20	109	331	173	335	360
+train_cost	85502.5	test_cost	21740.0	config	32	42	33	20	76	305	104	294	360
+train_cost	73283.2	test_cost	18651.9	config	32	42	33	20	76	305	104	294	360
+train_cost	86173.8	test_cost	21948.6	config	354	224	60	20	183	315	223	360
+train_cost	71759.4	test_cost	18353.0	config	354	224	60	20	183	315	223	360
+train_cost	85140.4	test_cost	21613.3	config	43	20	177	228	249	360
+train_cost	75301.4	test_cost	19129.9	config	43	20	177	228	249	360
+train_cost	89741.6	test_cost	22792.0	config	32	42	33	20	139	180	360
+train_cost	79820.0	test_cost	20258.9	config	32	42	33	20	139	180	360
+train_cost	182569.0	test_cost	45736.5	config	266	238	132	20	209	320	276	360
+train_cost	182564.0	test_cost	45740.9	config	266	238	132	20	209	320	276	360
+train_cost	81796.7	test_cost	20860.7	config	267	172	54	20	109	331	173	335	360
+train_cost	66562.7	test_cost	17024.7	config	267	172	54	20	109	331	173	335	360
+train_cost	85366.5	test_cost	21746.9	config	338	41	141	93	20	183	315	223	360
+train_cost	74502.1	test_cost	19007.4	config	338	41	141	93	20	183	315	223	360
+train_cost	88937.5	test_cost	22570.5	config	267	172	54	20	139	180	360
+train_cost	77596.7	test_cost	19772.1	config	267	172	54	20	139	180	360
+train_cost	101652.0	test_cost	25752.8	config	89	254	256	53	20	196	100	248	360
+train_cost	89346.7	test_cost	22747.8	config	89	254	256	53	20	196	100	248	360
+train_cost	99030.1	test_cost	25118.4	config	106	97	20	209	320	276	360
+train_cost	91538.9	test_cost	23414.1	config	106	97	20	209	320	276	360
+train_cost	84720.3	test_cost	21512.0	config	106	97	20	109	331	173	335	360
+train_cost	72577.7	test_cost	18542.5	config	106	97	20	109	331	173	335	360
+train_cost	91438.0	test_cost	23189.7	config	89	254	256	53	20	316	360
+train_cost	84726.9	test_cost	21558.1	config	89	254	256	53	20	316	360

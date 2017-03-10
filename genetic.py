@@ -184,7 +184,7 @@ class evolution:
                 female = mutants[female]
                 
                 child=experiment(out_dim=self.dim,minw=self.min,maxw=self.max,encoded_width=self.encoded_width)
-                weights = male.weights[:int(male.len/2-1)]+female.weights[int(female.len/2-1):]
+                weights = male.weights[:int(male.len/2)]+female.weights[int(female.len/2):]
                 child.set(weights)
                 children.append(child)
                 
