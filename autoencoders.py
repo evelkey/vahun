@@ -84,6 +84,33 @@ class Autoencoder_ffnn():
     def reconstruct(self, X):
         return self.sess.run(self.reconstruction, feed_dict={self.x: X})
     
+    def char_accuracy(self,data):
+        accuracy_max=len(data)*10
+        accuracy=len(data)*10
+        
+        reconstructed=self.reconstruct(data)
+        for i in range(len(data)):
+            a=data[i].reshape((10,36))
+            b=reconstructed[i].reshape((10,36))
+            for j in range(10):
+                if (a[j,:].argmax()!=b[j,:].argmax()):
+                    accuracy-=1
+        return accuracy/accuracy_max
+    
+    def word_accuracy(self,data):
+        accuracy_max=len(data)
+        accuracy=len(data)
+        
+        reconstructed=self.reconstruct(data)
+        for i in range(len(data)):
+            a=data[i].reshape((10,36))
+            b=reconstructed[i].reshape((10,36))
+            for j in range(10):
+                if (a[j,:].argmax()!=b[j,:].argmax()):
+                    accuracy-=1
+                    break
+        return accuracy/accuracy_max
+    
     def train(self,X_train,X_test,batch_size,max_epochs):
         breaker=False
         testlog=collections.deque(maxlen=30)
@@ -118,10 +145,11 @@ class Autoencoder_ffnn():
                     self.logger.logline("early_stop.log",["test_last_results"]+list(testlog))
                     break
         self.logger.logline("train.log",["STOP"])
-        self.logger.logline("full_trained.log",["train_cost",
-                             self.calc_total_cost(X_train)]+\
-                             ["test_cost",self.calc_total_cost(X_test)]+\
-                             ["config"]+self.layerlist)
+        #train_loss,test_loss,train_char_acc,train_word_acc,test_char_acc,test_word_acc,config
+        self.logger.logline("accuracy.log",[self.calc_total_cost(X_train),
+                             self.calc_total_cost(X_test),self.char_accuracy(X_train),
+                             self.word_accuracy(X_train),self.char_accuracy(X_test),
+                             self.word_accuracy(X_test)]+self.layerlist)
                           
     def get_random_block_from_data(self,data, batch_size):
         start_index = np.random.randint(0, len(data) - batch_size)
