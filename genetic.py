@@ -8,9 +8,13 @@ class experiment:
     
     def __init__(self,out_dim,minw,maxw,encoded_width,layermin=1,layermax=5):
         self.len=randint(layermin,layermax)*2
-        self.weights=[randint(minw,maxw) for n in range(self.len)]
-        self.weights[int(self.len/2-1)]=encoded_width
-        self.weights[-1]=out_dim
+        self.weights=[]
+        for i in range(int(self.len/2-1)):
+            self.weights.append(randint(minw,maxw))
+        self.weights.append(encoded_width)
+        for i in range(int(self.len/2-1)):
+            self.weights.append(self.weights[int(self.len/2-2-i)])
+        self.weights.append(out_dim)
         
     def set(self,weights):
         self.len=len(weights)
@@ -21,7 +25,7 @@ class evolution:
     def __init__(self,x_train,x_test,
                  population_size,encoder,
                  dim,config,logger,repeat_runs=2,
-                 epoch=50,batch=512,disp_freq=20):
+                 epoch=80,batch=512,disp_freq=20):
         """
         """
         self.timer=Timer()
@@ -29,7 +33,7 @@ class evolution:
         
         self.encoded_width=encoder
         self.dim=dim
-        self.min=encoder+8
+        self.min=encoder+20
         self.max=dim
         self.repeat_runs=repeat_runs
         
@@ -41,14 +45,14 @@ class evolution:
         self.x_test=x_test
         
         self.learnrate=0.001
-        self.batchsize=512
-        self.maxepoch=50
-        self.nonlinear=tf.nn.relu
+        self.batchsize=batch
+        self.maxepoch=epoch
+        self.nonlinear=tf.sigmoid
         self.optimizer=tf.train.AdamOptimizer(learning_rate = self.learnrate)
         
         
-        self.retain_p=0.2
-        self.random_select_p=0.05
+        self.retain_p=0.3
+        self.random_select_p=0.08
         self.mutate_p=0.1
         self.mutate_len_p=0.1
         self.mutate_width_p=0.4
