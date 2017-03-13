@@ -48,7 +48,7 @@ class Corpus:
         @return: true if the word can be hungarian, no symbols included
         """
         hun_word=True
-        if "eeeoddd" in word or ' ' in word:
+        if "eeeoddd" in word or ' ' in word or ""==word:
             return False
         for char in self.symbol:
             if char in word:
@@ -89,7 +89,7 @@ class Corpus:
                 if i==size:
                     break
                 else:
-                    if format=="wpl":
+                    if format=="wpl" :
                         self.full.append(self.read_line_wpl(line))
                     i+=1
                     if i%1000000==0: 
@@ -104,21 +104,19 @@ class Corpus:
         """
         if maxlen==0:
             maxlen=self.encoding_len
-        self.feature_tensor = np.zeros((len(x), maxlen, len(self.abc)))
+        self.feature_tensor = []
         for dix,item in enumerate(x):
             counter = 0
             one_hot = np.zeros((maxlen, len(self.abc)))
             chars = list(item.lower())
-            for i in range(len(chars)):
-                if len(chars)>maxlen:
-                    break
-                else:
+            if len(chars)<=maxlen:
+                for i in range(len(chars)):
                     if chars[i] in self.abc:
                         one_hot[maxlen-len(chars)+i,self.abc.find(chars[i])]=1
-            for i in range(maxlen-len(chars)):
-                 one_hot[i,0]=1
-            self.feature_tensor[dix, :, :] = one_hot
-
+                for i in range(maxlen-len(chars)):
+                     one_hot[i,0]=1
+                self.feature_tensor.append(one_hot)
+        self.feature_tensor=np.asarray(self.feature_tensor)
         return self.feature_tensor
 
     def defeaturize_data_charlevel_onehot(self,x,maxlen=0):

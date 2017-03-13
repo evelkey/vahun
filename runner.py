@@ -9,8 +9,8 @@ from autoencoders import Autoencoder_ffnn
 from genetic import evolution
 from genetic import experiment
 
-encode=10
-dictsize=1000000
+encode=20
+dictsize=100000
 popsize=40
 
 
@@ -19,16 +19,16 @@ config.gpu_options.allow_growth = True
 #config.gpu_options.per_process_gpu_memory_fraction=1
 corp_path="/mnt/permanent/Language/Hungarian/Corp/Webkorpusz/webkorpusz.wpl"#'/home/velkey/corp/webkorpusz.wpl'
 corp=Corpus(corpus_path=corp_path,language="Hun",size=dictsize,encoding_len=10)
-all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower_unique)
+all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower)
 train=all_features[0:int(len(all_features)*0.8)]
 test=all_features[int(len(all_features)*0.8):len(all_features)]
 x_train = train.reshape((len(train), np.prod(train.shape[1:])))
 x_test = test.reshape((len(test), np.prod(test.shape[1:])))
 print(x_train.shape)
-logger=explog(encoder_type="Accuracy_tracker_"+str(encode),
+logger=explog(encoder_type="nem_gen_no_empty_"+str(encode),
               encoding_dim=encode,feature_len=10,
               lang="Hun",unique_words=len(set(corp.full)),
-              name="acc_evolve_"+str(encode),population_size=popsize,
+              name="new_gen_"+str(encode),population_size=popsize,
               words=len(corp.hun_lower))
 
 

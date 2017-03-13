@@ -34,6 +34,7 @@ class Autoencoder_ffnn():
         init = tf.global_variables_initializer()
         self.sess = tf_session
         self.sess.run(init)
+        self.saver = tf.train.Saver()
         
         self.size=0
         nums=[self.n_input,layerlist]
@@ -161,3 +162,9 @@ class Autoencoder_ffnn():
         return tf.random_uniform((fan_in, fan_out),
                                  minval = low, maxval = high,
                                  dtype = tf.float32)
+    def save(self,path):
+        self.saver.save(self.sess, path)
+        
+    def load(self,path):
+        self.saver.restore(self.sess, path)
+
