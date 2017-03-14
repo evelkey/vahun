@@ -1,8 +1,8 @@
 from random import randint, random
 import collections
-from autoencoders import Autoencoder_ffnn
+from vahun.autoencoders import Autoencoder_ffnn
 import tensorflow as tf
-from tools import Timer
+from vahun.tools import Timer
 
 class experiment:
     
