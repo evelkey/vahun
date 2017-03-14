@@ -9,8 +9,8 @@ from autoencoders import Autoencoder_ffnn
 from genetic import evolution
 from genetic import experiment
 
-encode=10
-dictsize=100000
+encode=6
+dictsize=1000000
 popsize=40
 
 
