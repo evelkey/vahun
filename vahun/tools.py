@@ -21,7 +21,7 @@ class explog:
                  population_size,encoding_dim,
                  encoder_type,name="",sep="\t"):
         self.sep=sep
-        self.dir="logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
+        self.dir="../logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
             self.logline("details.log",["Language",lang])
@@ -43,9 +43,9 @@ class explog:
             myfile.write(string)
             
 class logread:
-    def __init__(self):
-        self.logdir="logs"
-        self.delimiter="\t"
+    def __init__(self,logdir="logs",sep="\t"):
+        self.logdir=logdir
+        self.delimiter=sep
         self.lognames=self.read_all_log_folders()
         self.detaildata=[]
         self.traindata=[]
