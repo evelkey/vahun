@@ -1,23 +1,31 @@
 import tensorflow as tf
-
-from corpus import Corpus
 import numpy as np
+from vahun.corpus import Corpus
+from vahun.tools import Timer
+from vahun.tools import explog
+from vahun.autoencoders import Autoencoder_ffnn
+from vahun.genetic import evolution
+from vahun.genetic import experiment
+import argparse
 
-from tools import Timer
-from tools import explog
-from autoencoders import Autoencoder_ffnn
-from genetic import evolution
-from genetic import experiment
+parser = argparse.ArgumentParser(description='Autoencoder experiment runner')
+parser.add_argument('--corp_path', dest='corp_path', type=str,default='/mnt/permanent/Language/Hungarian/Corp/Webkorpusz/webkorpusz.wpl',	 help='Path to the Corpus.')
+parser.add_argument("--encoding_dim", dest="encoding_dim", default=10, type=int, help='Encoding dimension')
+parser.add_argument("--corp_len", dest="corp_len", default=100000, type=int, help="Words to read from corpus")
+parser.add_argument("--pop_size", dest="pop_size", default=40, type=int, help="Population size")
 
-encode=6
-dictsize=1000000
-popsize=40
 
+args = parser.parse_args()
+
+encode=args.encoding_dim
+dictsize=args.corp_len
+popsize=args.pop_size
+corp_path=args.corp_path
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
-#config.gpu_options.per_process_gpu_memory_fraction=1
-corp_path="/mnt/permanent/Language/Hungarian/Corp/Webkorpusz/webkorpusz.wpl"#'/home/velkey/corp/webkorpusz.wpl'
+
+
 corp=Corpus(corpus_path=corp_path,language="Hun",size=dictsize,encoding_len=10)
 all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower)
 train=all_features[0:int(len(all_features)*0.8)]

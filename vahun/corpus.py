@@ -84,7 +84,7 @@ class Corpus:
         i=0
         start=time.time()
         
-        with open(self.corpus_path) as f:
+        with open(self.corpus_path,encoding='utf8') as f:
             for line in f:
                 if i==size:
                     break
