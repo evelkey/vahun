@@ -21,7 +21,7 @@ class explog:
                  population_size,encoding_dim,
                  encoder_type,name="",sep="\t"):
         self.sep=sep
-        self.dir="../logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
+        self.dir="/logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
             self.logline("details.log",["Language",lang])

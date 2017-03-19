@@ -1,12 +1,12 @@
 from random import randint, random
 import collections
-from vahun.autoencoders import Autoencoder_ffnn
+from vahun.autoencoder import Autoencoder_ffnn
 import tensorflow as tf
 from vahun.tools import Timer
 
 class experiment:
     
-    def __init__(self,out_dim,minw,maxw,encoded_width,layermin=1,layermax=5):
+    def __init__(self,out_dim,minw,maxw,encoded_width,layermin=1,layermax=3):
         self.len=randint(layermin,layermax)*2
         self.weights=[]
         for i in range(int(self.len/2-1)):

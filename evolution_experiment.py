@@ -8,39 +8,45 @@ from vahun.genetic import evolution
 from vahun.genetic import experiment
 import argparse
 
-parser = argparse.ArgumentParser(description='Autoencoder experiment runner')
-parser.add_argument('--corp_path', dest='corp_path', type=str,default='/mnt/permanent/Language/Hungarian/Corp/Webkorpusz/webkorpusz.wpl',	 help='Path to the Corpus.')
-parser.add_argument("--encoding_dim", dest="encoding_dim", default=10, type=int, help='Encoding dimension')
-parser.add_argument("--corp_len", dest="corp_len", default=100000, type=int, help="Words to read from corpus")
-parser.add_argument("--pop_size", dest="pop_size", default=40, type=int, help="Population size")
+
+def main(args=None):
+	encode=args.encoding_dim
+	dictsize=args.corp_len
+	popsize=args.pop_size
+	corp_path=args.corp_path
+
+	config = tf.ConfigProto()
+	config.gpu_options.allow_growth = True
 
 
-args = parser.parse_args()
+	corp=Corpus(corpus_path=corp_path,language="Hun",size=dictsize,encoding_len=args.feature_len)
+	all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower)
+	train=all_features[0:int(len(all_features)*0.8)]
+	test=all_features[int(len(all_features)*0.8):len(all_features)]
+	x_train = train.reshape((len(train), np.prod(train.shape[1:])))
+	x_test = test.reshape((len(test), np.prod(test.shape[1:])))
+	print(x_train.shape)
 
-encode=args.encoding_dim
-dictsize=args.corp_len
-popsize=args.pop_size
-corp_path=args.corp_path
-
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-
-
-corp=Corpus(corpus_path=corp_path,language="Hun",size=dictsize,encoding_len=10)
-all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower)
-train=all_features[0:int(len(all_features)*0.8)]
-test=all_features[int(len(all_features)*0.8):len(all_features)]
-x_train = train.reshape((len(train), np.prod(train.shape[1:])))
-x_test = test.reshape((len(test), np.prod(test.shape[1:])))
-print(x_train.shape)
-logger=explog(encoder_type="nem_gen_no_empty_"+str(encode),
-              encoding_dim=encode,feature_len=10,
-              lang="Hun",unique_words=len(set(corp.full)),
-              name="new_gen_"+str(encode),population_size=popsize,
-              words=len(corp.hun_lower))
+	logger=explog(encoder_type="new_gen_"+str(encode),
+				  encoding_dim=encode,feature_len=args.feature_len,
+				  lang="Hun",unique_words=len(set(corp.full)),
+				  name="new_gen_"+str(encode),population_size=popsize,
+				  words=len(corp.hun_lower))
 
 
-x23=evolution(x_train,x_test,popsize,encode,360,config,logger=logger)
-for i in range(3):        
-    x23.evolve()
-    logger.logline("evolution.log",["generation",i,"grade",x23.grade()])
+	x23=evolution(x_train,x_test,popsize,encode,args.feature_len*36,config,logger=logger)
+	for i in range(3):        
+		x23.evolve()
+		logger.logline("evolution.log",["generation",i,"grade",x23.grade()])
+		
+	
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Autoencoder experiment runner')
+	parser.add_argument('--corp_path', dest='corp_path', type=str,default='/mnt/permanent/Language/Hungarian/Corp/Webkorpusz/webkorpusz.wpl',	 help='Path to the Corpus.')
+	parser.add_argument("--encoding_dim", dest="encoding_dim", default=10, type=int, help='Encoding dimension')
+	parser.add_argument("--corp_len", dest="corp_len", default=100000, type=int, help="Words to read from corpus")
+	parser.add_argument("--pop_size", dest="pop_size", default=40, type=int, help="Population size")
+	parser.add_argument("--feature_len", dest="feature_len", default=10, type=int, help="Feature size")
+	
+	args = parser.parse_args()
+	main(args)
