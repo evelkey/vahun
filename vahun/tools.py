@@ -21,7 +21,7 @@ class explog:
                  population_size,encoding_dim,
                  encoder_type,name="",sep="\t"):
         self.sep=sep
-        self.dir="/logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
+        self.dir="logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
             self.logline("details.log",["Language",lang])
@@ -134,4 +134,30 @@ class logread:
                      "\nMax train accuracy:",max(trainlist),
                      "\nWith config: ",best_config)
                 plt.show()
-           
+
+
+
+def show_performance(encoder,data,length=0,inputdepth=10,inputfsize=36):
+    if isinstance(data,list):
+        handmade=corp.featurize_data_charlevel_onehot(data)
+        data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
+        if length==0:
+            length=len(data)
+    a=data
+    b=(encoder.reconstruct(a))
+    
+    characc=np.ones(inputdepth)*length
+    for i in range(length):
+        xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
+        xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
+        if i<length:
+            print(xa,"\t",xb)
+        for j in range(inputdepth):
+            if (xa[j]!=xb[j]):
+                characc[j]-=1
+                
+    print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
+    plt.plot([i for i in range(inputdepth)],characc/length)
+    plt.show()
+    
+    

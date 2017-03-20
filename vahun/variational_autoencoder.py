@@ -4,68 +4,61 @@ import numpy as np
 import collections
 
 class Variational_autoencoder():
-    def __init__(self,experiment,
+    def __init__(self,
                  tf_session, inputdim,
                  logger,
-                 layerlist,encode_index,
+                 encoding_size,
                  optimizer = tf.train.AdamOptimizer(),
-                 nonlinear=tf.nn.relu,
+                 nonlinear=tf.sigmoid,
                  disp_step=20):
         """
         """
-        self.experiment=experiment
+       
         self.logger=logger
-        
-        self.layerlist=layerlist
-        self.layernum=len(layerlist)
+
         self.n_input = inputdim
-        self.encode_index=encode_index
+        self.n_hidden=encoding_size
         self.display_step=disp_step
 
         network_weights = self._initialize_weights()
         self.weights = network_weights  
 
-        self._create_layers(nonlinear)
+        self.x = tf.placeholder(tf.float32, [None, self.n_input])
+        self.z_mean = tf.add(tf.matmul(self.x, self.weights['w1']), self.weights['b1'])
+        self.z_log_sigma_sq = tf.add(tf.matmul(self.x, self.weights['log_sigma_w1']), self.weights['log_sigma_b1'])
+
+        # sample from gaussian distribution
+        eps = tf.random_normal([tf.shape(self.x)[0], self.n_hidden], 0, 1, dtype = tf.float32)
+        self.z = tf.add(self.z_mean, tf.multiply(tf.sqrt(tf.exp(self.z_log_sigma_sq)), eps))
+
+        self.reconstruction = tf.add(tf.matmul(self.z, self.weights['w2']), self.weights['b2'])
 
         # cost
-        self.cost =  0.5*tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.x), 2.0))
+        reconstr_loss = 0.5 * tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.x), 2.0))
+        latent_loss = -0.5 * tf.reduce_sum(1 + self.z_log_sigma_sq
+                                           - tf.square(self.z_mean)
+                                           - tf.exp(self.z_log_sigma_sq), 1)
+        self.cost = tf.reduce_mean(reconstr_loss + latent_loss)
         self.optimizer = optimizer.minimize(self.cost)
 
+        #tf stuff init
         init = tf.global_variables_initializer()
         self.sess = tf_session
         self.sess.run(init)
         self.saver = tf.train.Saver()
         
-        self.size=0
-        nums=[self.n_input,layerlist]
-        for i in range(1,len(nums)):
-            self.size+=4*layerlist[i]*layerlist[i-1]
+        self.size=encoding_size
         
 
     def _initialize_weights(self):
         all_weights = dict()
-        
-        all_weights['w1']=tf.Variable(self.xavier_init(self.n_input, self.layerlist[0]))
-        all_weights['b1'] = tf.Variable(tf.random_normal([self.layerlist[0]], dtype=tf.float32))
-        
-        for i in range(1,self.layernum):
-            all_weights['w'+str(i+1)]=tf.Variable(self.xavier_init(self.layerlist[i-1], self.layerlist[i]))
-            all_weights['b'+str(i+1)] = tf.Variable(tf.random_normal([self.layerlist[i]], dtype=tf.float32))
-
+        all_weights['w1'] = tf.Variable(self.xavier_init(self.n_input, self.n_hidden))
+        all_weights['log_sigma_w1'] = tf.Variable(self.xavier_init(self.n_input, self.n_hidden))
+        all_weights['b1'] = tf.Variable(tf.zeros([self.n_hidden], dtype=tf.float32))
+        all_weights['log_sigma_b1'] = tf.Variable(tf.zeros([self.n_hidden], dtype=tf.float32))
+        all_weights['w2'] = tf.Variable(tf.zeros([self.n_hidden, self.n_input], dtype=tf.float32))
+        all_weights['b2'] = tf.Variable(tf.zeros([self.n_input], dtype=tf.float32))
         return all_weights
-    
-    def _create_layers(self,nonlinearity=tf.nn.relu):
-        """
-        """
-        self.x = tf.placeholder(tf.float32, [None, self.n_input])
-        layer=nonlinearity(tf.add(tf.matmul(self.x, self.weights['w1']), self.weights['b1']))
-
-        for i in range(1,self.layernum-1):
-            if i==self.encode_index:
-                self.encoded=layer
-            layer=nonlinearity(tf.add(tf.matmul(layer, self.weights['w'+str(i+1)]), self.weights['b'+str(i+1)]))
-            
-        self.reconstruction=tf.add(tf.matmul(layer, self.weights['w'+str(self.layernum)]), self.weights['b'+str(self.layernum)])
 
     def partial_fit(self, X):
         cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X})
@@ -116,7 +109,7 @@ class Variational_autoencoder():
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
-        self.logger.logline("train.log",["config"]+self.layerlist)
+        self.logger.logline("train.log",["config"]+[self.n_hidden,self.n_input])
         
         total_batch = int(max_epochs*len(X_train) / batch_size)
         # Loop over all batches
@@ -141,7 +134,6 @@ class Variational_autoencoder():
                 if breaker:
                     self.logger.logline("early_stop.log",["STOPPED"])
                     self.logger.logline("early_stop.log",["survived",i])
-                    self.logger.logline("early_stop.log",["config"]+self.layerlist)
                     self.logger.logline("early_stop.log",["train_cost",self.calc_total_cost(X_train)])
                     self.logger.logline("early_stop.log",["test_last_results"]+list(testlog))
                     break
@@ -150,7 +142,7 @@ class Variational_autoencoder():
         self.logger.logline("accuracy.log",[self.calc_total_cost(X_train),
                              self.calc_total_cost(X_test),self.char_accuracy(X_train),
                              self.word_accuracy(X_train),self.char_accuracy(X_test),
-                             self.word_accuracy(X_test)]+self.layerlist)
+                             self.word_accuracy(X_test)]+[self.n_hidden,self.n_input])
                           
     def get_random_block_from_data(self,data, batch_size):
         start_index = np.random.randint(0, len(data) - batch_size)
@@ -162,6 +154,13 @@ class Variational_autoencoder():
         return tf.random_uniform((fan_in, fan_out),
                                  minval = low, maxval = high,
                                  dtype = tf.float32)
+    
+    def getWeights(self):
+        return self.sess.run(self.weights['w1'])
+
+    def getBiases(self):
+        return self.sess.run(self.weights['b1'])
+    
     def save(self,path):
         self.saver.save(self.sess, path)
         
