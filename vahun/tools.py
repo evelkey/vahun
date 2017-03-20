@@ -137,7 +137,7 @@ class logread:
 
 
 
-def show_performance(encoder,data,length=0,inputdepth=10,inputfsize=36):
+def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
     if isinstance(data,list):
         handmade=corp.featurize_data_charlevel_onehot(data)
         data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
