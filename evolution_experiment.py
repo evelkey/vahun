@@ -3,7 +3,7 @@ import numpy as np
 from vahun.corpus import Corpus
 from vahun.tools import Timer
 from vahun.tools import explog
-from vahun.autoencoders import Autoencoder_ffnn
+from vahun.autoencoder import Autoencoder_ffnn
 from vahun.genetic import evolution
 from vahun.genetic import experiment
 import argparse
@@ -20,17 +20,17 @@ def main(args=None):
 
 
 	corp=Corpus(corpus_path=corp_path,language="Hun",size=dictsize,encoding_len=args.feature_len)
-	all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower)
+	all_features=corp.featurize_data_charlevel_onehot(corp.hun_lower_unique)
 	train=all_features[0:int(len(all_features)*0.8)]
 	test=all_features[int(len(all_features)*0.8):len(all_features)]
 	x_train = train.reshape((len(train), np.prod(train.shape[1:])))
 	x_test = test.reshape((len(test), np.prod(test.shape[1:])))
 	print(x_train.shape)
 
-	logger=explog(encoder_type="new_gen_"+str(encode),
+	logger=explog(encoder_type="autoencoder_unique_"+str(encode),
 				  encoding_dim=encode,feature_len=args.feature_len,
 				  lang="Hun",unique_words=len(set(corp.full)),
-				  name="new_gen_"+str(encode),population_size=popsize,
+				  name="autoencoder_unique_"+str(encode),population_size=popsize,
 				  words=len(corp.hun_lower))
 
 

@@ -10,7 +10,7 @@ class experiment:
         self.len=randint(layermin,layermax)*2
         self.weights=[]
         for i in range(int(self.len/2-1)):
-            self.weights.append(randint(minw,maxw))
+            self.weights.append(randint(minw,maxw)*10)
         self.weights.append(encoded_width)
         for i in range(int(self.len/2-1)):
             self.weights.append(self.weights[int(self.len/2-2-i)])
@@ -33,8 +33,8 @@ class evolution:
         
         self.encoded_width=encoder
         self.dim=dim
-        self.min=encoder+20
-        self.max=dim
+        self.min=int(encoder/10)+2
+        self.max=int(dim/10)
         self.repeat_runs=repeat_runs
         
         self.config=config

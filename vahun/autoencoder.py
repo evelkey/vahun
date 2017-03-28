@@ -59,7 +59,7 @@ class Autoencoder_ffnn():
         """
         self.x = tf.placeholder(tf.float32, [None, self.n_input])
         layer=nonlinearity(tf.add(tf.matmul(self.x, self.weights['w1']), self.weights['b1']))
-
+        self.encoded=layer
         for i in range(1,self.layernum-1):
             if i==self.encode_index:
                 self.encoded=layer

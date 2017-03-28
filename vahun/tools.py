@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-
+from vahun.neuroplot import DrawNN
 
 class Timer:
     def __init__(self):
@@ -109,7 +109,7 @@ class logread:
                 plt.plot(lenlist,trainlist,'ro',lenlist,testlist,'g^')
 
                 plt.show()
-    def plot_accuracy(self):
+    def plot_accuracy(self,filter=""):
         for i in range(len(self.detaildata)):
             
             lenlist=[]
@@ -118,7 +118,7 @@ class logread:
             sumlist=[]
             wordlist=[]
             max_accuracy=0
-            if self.accuracydata[i]!=None:
+            if self.accuracydata[i]!=None and filter in self.detaildata[i][0]:
                 print(self.detaildata[i])
                 for j in range(len(self.accuracydata[i])):
                     lenlist.append(len(self.accuracydata[i][j])-6)
@@ -134,7 +134,8 @@ class logread:
                      "\nMax train accuracy:",max(trainlist),
                      "\nWith config: ",best_config)
                 plt.show()
-
+                
+                DrawNN([int(best_config[-1]/10)]+[int(item/10) for item in best_config]).draw()
 
 
 def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
@@ -155,6 +156,32 @@ def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
         for j in range(inputdepth):
             if (xa[j]!=xb[j]):
                 characc[j]-=1
+                
+    print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
+    plt.plot([i for i in range(inputdepth)],characc/length)
+    plt.show()
+    
+def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
+    if isinstance(data,list):
+        handmade=corp.featurize_data_charlevel_onehot(data)
+        data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
+        if length==0:
+            length=len(data)
+    a=data
+    b=(encoder.reconstruct(a))
+    
+    characc=np.ones(inputdepth)*length
+    for i in range(length):
+        xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
+        xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
+        if i<length:
+            print(xa,"\t",xb)
+        for j in range(inputdepth):
+            if (xa[j]!=xb[j]):
+                characc[j]-=1
+        #print(encoder.encode([a[i]])[0])
+        plt.vlines([i for i in range(len(encoder.encode([a[i]])[0]))],[0],encoder.encode([a[i]])[0])
+        plt.show()
                 
     print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
     plt.plot([i for i in range(inputdepth)],characc/length)
