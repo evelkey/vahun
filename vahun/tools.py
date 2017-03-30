@@ -1,4 +1,5 @@
 import time
+import heapq
 import os
 import pandas as pd
 import numpy as np
@@ -138,7 +139,10 @@ class logread:
                 DrawNN([int(best_config[-1]/10)]+[int(item/10) for item in best_config]).draw()
 
 
-def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
+
+    
+def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=36):
+    enc_list=[]
     if isinstance(data,list):
         handmade=corp.featurize_data_charlevel_onehot(data)
         data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
@@ -148,43 +152,25 @@ def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
     b=(encoder.reconstruct(a))
     
     characc=np.ones(inputdepth)*length
-    for i in range(length):
+    for i in range(len(data)):
         xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
         xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
-        if i<length:
+        if i<length and printer:
             print(xa,"\t",xb)
         for j in range(inputdepth):
             if (xa[j]!=xb[j]):
                 characc[j]-=1
+        enc_list.append(encoder.encode([a[i]])[0])
+        if i<length and plot:
+            plt.vlines([i for i in range(len(enc_list[-1]))],[0],enc_list[-1])
+            plt.show()
                 
     print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
     plt.plot([i for i in range(inputdepth)],characc/length)
     plt.show()
     
-def show_performance(encoder,data,corp,length=0,inputdepth=10,inputfsize=36):
-    if isinstance(data,list):
-        handmade=corp.featurize_data_charlevel_onehot(data)
-        data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
-        if length==0:
-            length=len(data)
-    a=data
-    b=(encoder.reconstruct(a))
-    
-    characc=np.ones(inputdepth)*length
-    for i in range(length):
-        xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
-        xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
-        if i<length:
-            print(xa,"\t",xb)
-        for j in range(inputdepth):
-            if (xa[j]!=xb[j]):
-                characc[j]-=1
-        #print(encoder.encode([a[i]])[0])
-        plt.vlines([i for i in range(len(encoder.encode([a[i]])[0]))],[0],encoder.encode([a[i]])[0])
-        plt.show()
-                
-    print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
-    plt.plot([i for i in range(inputdepth)],characc/length)
-    plt.show()
+    #find high dev
+    stds=[np.std([item[i] for item in enc_list]) for i in range(180)]
+    return stds
     
     

@@ -64,17 +64,12 @@ class Corpus:
         return line.replace("\n","")
     
     def lowercasen(self,list_of_words):
-        lowerlist=[]
-        for item in list_of_words:
-            lowerlist.append(item.lower())
-        return lowerlist
+        return [word.lower() for word in list_of_words]
     
     def filter_only_words(self,corpus):
-        words=[]
-        for item in corpus:
-            if(self.language=="Hun" and self.is_hun_word(item)):
-                words.append(item)
-        return words
+        if self.language != "Hun":
+            return []
+        return [word for word in corpus if self.is_hun_word(word)]
             
     def read_all_words(self,size,format="wpl"):
         """
