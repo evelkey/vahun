@@ -119,7 +119,7 @@ class logread:
             sumlist=[]
             wordlist=[]
             max_accuracy=0
-            if self.accuracydata[i]!=None and filter in self.detaildata[i][0]:
+            if self.accuracydata[i]!=None and filter in self.detaildata[i][6][1]:
                 print(self.detaildata[i])
                 for j in range(len(self.accuracydata[i])):
                     lenlist.append(len(self.accuracydata[i][j])-6)
@@ -141,7 +141,7 @@ class logread:
 
 
     
-def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=36):
+def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=38):
     enc_list=[]
     if isinstance(data,list):
         handmade=corp.featurize_data_charlevel_onehot(data)

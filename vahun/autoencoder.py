@@ -10,9 +10,14 @@ class Autoencoder_ffnn():
                  layerlist,encode_index,
                  optimizer = tf.train.AdamOptimizer(),
                  nonlinear=tf.nn.relu,
-                 disp_step=20):
+                 disp_step=20,
+                charnum=38,
+                maxlen=10):
         """
         """
+        self.charnum=charnum
+        self.maxlen=maxlen
+        
         self.experiment=experiment
         self.logger=logger
         
@@ -86,14 +91,14 @@ class Autoencoder_ffnn():
         return self.sess.run(self.reconstruction, feed_dict={self.x: X})
     
     def char_accuracy(self,data):
-        accuracy_max=len(data)*10
-        accuracy=len(data)*10
+        accuracy_max=len(data)*self.maxlen
+        accuracy=len(data)*self.maxlen
         
         reconstructed=self.reconstruct(data)
         for i in range(len(data)):
-            a=data[i].reshape((10,36))
-            b=reconstructed[i].reshape((10,36))
-            for j in range(10):
+            a=data[i].reshape((self.maxlen,self.charnum))
+            b=reconstructed[i].reshape((self.maxlen,self.charnum))
+            for j in range(self.maxlen):
                 if (a[j,:].argmax()!=b[j,:].argmax()):
                     accuracy-=1
         return accuracy/accuracy_max
@@ -104,9 +109,9 @@ class Autoencoder_ffnn():
         
         reconstructed=self.reconstruct(data)
         for i in range(len(data)):
-            a=data[i].reshape((10,36))
-            b=reconstructed[i].reshape((10,36))
-            for j in range(10):
+            a=data[i].reshape((self.maxlen,self.charnum))
+            b=reconstructed[i].reshape((self.maxlen,self.charnum))
+            for j in range(self.maxlen):
                 if (a[j,:].argmax()!=b[j,:].argmax()):
                     accuracy-=1
                     break

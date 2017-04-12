@@ -19,9 +19,10 @@ class Corpus:
         self.accents = 'áéíóöőúüű'
         self.alphabet = 'abcdefghijklmnopqrstuvwxyz'
         self.space = ' '
+        self.beginend= '^$'
         
         if language=="Hun":
-            self.abc=self.space+self.alphabet+self.accents
+            self.abc=self.space+self.alphabet+self.accents+self.beginend
         
         self.language=language
         
@@ -142,3 +143,25 @@ class Corpus:
     def get_random_block_from_data(self,batch_size):
         start_index = np.random.randint(0, len(data) - batch_size)
         return self.feature_tensor[start_index:(start_index + batch_size)]
+    
+    def mark_begin_end(self,word):
+        return "^" + word + "$"
+    
+    def mark_list(self,lista):
+        return [self.mark_begin_end(word) for word in lista]
+        
+    def di2single(self,word):
+        word=word.replace("cs","C")
+        word=word.replace("ly","J")
+        word=word.replace("zs","Z")
+        word=word.replace("ny","N")
+        word=word.replace("dz","D")
+        word=word.replace("dzs","K")
+        word=word.replace("sz","S")
+        word=word.replace("ty","T")
+        word=word.replace("gy","G")
+        return word
+    
+    def digraph_2_single(self,lista):
+        return [self.di2single(word) for word in lista]
+        
