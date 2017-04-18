@@ -1,0 +1,8 @@
+Language	Hun
+Wordcount	1454976
+Unique words	214708
+Population size	10
+Encoding dim	120
+Encoder type	autoencoder_unique_with_mark120
+nonlinear	<function sigmoid at 0x7f54eba89730>
+population_size	10

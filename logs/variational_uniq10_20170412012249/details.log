@@ -1,0 +1,6 @@
+Language	Hun
+Wordcount	116596
+Unique words	116596
+Population size	1
+Encoding dim	10
+Encoder type	variational_uniq_with_marks10
