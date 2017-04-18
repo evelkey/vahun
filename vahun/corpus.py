@@ -8,7 +8,7 @@ class Corpus:
                 size,
                 language="Hun",
                 needed_corpus=["unique","lower","hun_lower","lower_unique","hun_lower_unique"],
-                encoding_len=20):
+                encoding_len=10):
         """
         Creates corpus object, with the given parameters
         @needed_corpus: list, can contain: "unique","lower","hun_lower","lower_unique","hun_lower_unique"
@@ -24,6 +24,8 @@ class Corpus:
             self.abc=self.space+self.alphabet+self.accents
         
         self.language=language
+        
+        self.embedder=np.random.normal(size=[len(self.abc),encoding_len])
         
         self.full=[]
         self.read_all_words(size)
@@ -128,6 +130,43 @@ class Corpus:
                 out+=self.abc[item[i,:].argmax()]
             defeaturized.append(out)
         return defeaturized
+    
+     def featurize_data_charlevel_embed(self,x,maxlen=0):
+        """
+        @x: list of words
+        @returns the feature tensor
+        """
+        if maxlen==0:
+            maxlen=self.encoding_len
+        self.feature_tensor = []
+        for dix,item in enumerate(x):
+            counter = 0
+            one_hot = np.zeros((maxlen, len(self.abc)))
+            chars = list(item.lower())
+            if len(chars)<=maxlen:
+                for i in range(len(chars)):
+                    if chars[i] in self.abc:
+                        one_hot[maxlen-len(chars)+i,self.abc.find(chars[i])]=1
+                for i in range(maxlen-len(chars)):
+                     one_hot[i,0]=1
+                self.feature_tensor.append(one_hot)
+        self.feature_tensor=np.asarray(self.feature_tensor)
+        return self.feature_tensor
+
+    def defeaturize_data_charlevel_embed(self,x,maxlen=0):
+        """
+        @x is the feature tensor
+        @returns  the decoded word from the tensor
+        """
+        if maxlen==0:
+            maxlen=self.encoding_len
+        defeaturized=[]
+        for item in x:
+            out=""
+            for i in range(maxlen):
+                out+=self.abc[item[i,:].argmax()]
+            defeaturized.append(out)
+        return defeaturized   
      
     def get_stat(self,corpus):
         frequency=collections.Counter(corpus)
