@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from vahun.neuroplot import DrawNN
+import Levenshtein
 
 class Timer:
     def __init__(self):
@@ -143,6 +144,8 @@ class logread:
     
 def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=38):
     enc_list=[]
+    levenshteins=[]
+    
     if isinstance(data,list):
         handmade=corp.featurize_data_charlevel_onehot(data)
         data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
@@ -155,8 +158,10 @@ def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputde
     for i in range(len(data)):
         xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
         xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
+        levenshteins.append(Levenshtein.distance(xa,xb))
+        
         if i<length and printer:
-            print(xa,"\t",xb)
+            print(xa,"\t",xb,"\t",levenshteins[-1])
         for j in range(inputdepth):
             if (xa[j]!=xb[j]):
                 characc[j]-=1
@@ -171,6 +176,9 @@ def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputde
     
     #find high dev
     stds=[np.std([item[i] for item in enc_list]) for i in range(180)]
+    
+    print(np.mean(levenshteins))
+    
     return stds
     
     

@@ -110,6 +110,14 @@ class Variational_autoencoder():
                     break
         return accuracy/accuracy_max
     
+    def levenshtein_distance(self,data):
+        fulldist=0
+        avgdist=0
+        reconstructed=self.reconstruct(data)
+        dists=[Levenshtein.distance(data[i].reshape((self.maxlen,self.charnum)),reconstructed[i].reshape((self.maxlen,self.charnum))) for i in range(len(data))]
+            
+        return np.sum(dists),np.average(dists)
+    
     def train(self,X_train,X_test,batch_size,max_epochs):
         breaker=False
         testlog=collections.deque(maxlen=30)
