@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import time
 import heapq
 import os
@@ -142,10 +144,28 @@ class logread:
 
 
     
-def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=38):
+def show_reconstruction(encoder,data,corp,length=0,inputdepth=10,inputfsize=38):
+        enc_list=[]
+        levenshteins=[]
+
+        if isinstance(data,list):
+            handmade=corp.featurize_data_charlevel_onehot(data)
+            data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
+
+        a=data
+        b=(encoder.reconstruct(a))
+
+        for i in range(len(data)):
+            xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
+            xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
+            levenshteins.append(Levenshtein.distance(xa,xb))
+            print(xa,"\t",xb,"\t",levenshteins[-1])
+
+def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=38,encodim=180):
     enc_list=[]
     levenshteins=[]
-    
+    if length==0:
+        length=len(data)
     if isinstance(data,list):
         handmade=corp.featurize_data_charlevel_onehot(data)
         data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
@@ -169,16 +189,15 @@ def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputde
         if i<length and plot:
             plt.vlines([i for i in range(len(enc_list[-1]))],[0],enc_list[-1])
             plt.show()
-                
-    print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
-    plt.plot([i for i in range(inputdepth)],characc/length)
-    plt.show()
+    if printer:            
+        print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
+    if plot:
+        plt.plot([i for i in range(inputdepth)],characc/length)
+        plt.show()
     
     #find high dev
-    stds=[np.std([item[i] for item in enc_list]) for i in range(180)]
-    
-    print(np.mean(levenshteins))
+    stds=[np.std([item[i] for item in enc_list]) for i in range(encodim)]
+    if printer:
+        print("average Levenshtein distance: ",np.mean(levenshteins))
     
     return stds
-    
-    

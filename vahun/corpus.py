@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import collections
 import numpy as np
 import time
@@ -8,12 +10,14 @@ class Corpus:
                 size,
                 language="Hun",
                 needed_corpus=["unique","lower","hun_lower","lower_unique","hun_lower_unique"],
-                encoding_len=10):
+                encoding_len=10,
+                corpus_stream=None,
+                printer=True):
         """
         Creates corpus object, with the given parameters
         @needed_corpus: list, can contain: "unique","lower","hun_lower","lower_unique","hun_lower_unique"
         """
-        self.corpus_path=corpus_path
+                  
         self.encoding_len=encoding_len
         self.symbol='0123456789-,;.!?:’\”\"/\\|_@#$%^&*~`+ =<>()[]{}'
         self.accents = 'áéíóöőúüű'
@@ -29,7 +33,14 @@ class Corpus:
         self.embedder=np.random.normal(size=[len(self.abc),encoding_len])
         
         self.full=[]
-        self.read_all_words(size)
+        self.printer=printer
+        
+        if corpus_stream==None:
+            self.corpus_path=corpus_path
+            self.read_all_words(size)
+        else:
+            self.corpus_path=None
+            self.read_stream(corpus_stream,size)
         
         if "unique" in needed_corpus:
             self.unique=list(set(self.full))
@@ -42,7 +53,7 @@ class Corpus:
         if "hun_lower_unique" in needed_corpus:
             self.hun_lower_unique=list(set(self.filter_only_words(self.lowercasen(self.full))))
             
-        print("Corpus initalized, fields:",needed_corpus,"\nUnique words: ",len(set(self.full)))
+        if self.printer: print("Corpus initalized, fields:",needed_corpus,"\nUnique words: ",len(set(self.full)))
         
         
     def is_hun_word(self,word):
@@ -91,9 +102,28 @@ class Corpus:
                         self.full.append(self.read_line_wpl(line))
                     i+=1
                     if i%1000000==0: 
-                        if i!=0: print("Reading file, speed: ",1000000/(time.time()-start)," words/s")
+                        if i!=0 and self.printer: print("Reading file, speed: ",1000000/(time.time()-start)," words/s")
                         start=time.time()
                         
+    def read_stream(self,stream,size,format="wpl"):
+        """
+        Reads words from the specified format
+        @size: max number of words
+        """
+        i=0
+        start=time.time()
+        
+        with stream as f:
+            for line in f:
+                if i==size:
+                    break
+                else:
+                    if format=="wpl" :
+                        self.full.append(self.read_line_wpl(line))
+                    i+=1
+                    if i%1000000==0: 
+                        if i!=0 and self.printer: print("Reading file, speed: ",1000000/(time.time()-start)," words/s")
+                        start=time.time()              
     
     def featurize_data_charlevel_onehot(self,x, maxlen=0):
         """
@@ -131,44 +161,8 @@ class Corpus:
                 out+=self.abc[item[i,:].argmax()]
             defeaturized.append(out)
         return defeaturized
-    
-     def featurize_data_charlevel_embed(self,x,maxlen=0):
-        """
-        @x: list of words
-        @returns the feature tensor
-        """
-        if maxlen==0:
-            maxlen=self.encoding_len
-        self.feature_tensor = []
-        for dix,item in enumerate(x):
-            counter = 0
-            one_hot = np.zeros((maxlen, len(self.abc)))
-            chars = list(item.lower())
-            if len(chars)<=maxlen:
-                for i in range(len(chars)):
-                    if chars[i] in self.abc:
-                        one_hot[maxlen-len(chars)+i,self.abc.find(chars[i])]=1
-                for i in range(maxlen-len(chars)):
-                     one_hot[i,0]=1
-                self.feature_tensor.append(one_hot)
-        self.feature_tensor=np.asarray(self.feature_tensor)
-        return self.feature_tensor
+   
 
-    def defeaturize_data_charlevel_embed(self,x,maxlen=0):
-        """
-        @x is the feature tensor
-        @returns  the decoded word from the tensor
-        """
-        if maxlen==0:
-            maxlen=self.encoding_len
-        defeaturized=[]
-        for item in x:
-            out=""
-            for i in range(maxlen):
-                out+=self.abc[item[i,:].argmax()]
-            defeaturized.append(out)
-        return defeaturized   
-     
     def get_stat(self,corpus):
         frequency=collections.Counter(corpus)
         return frequency

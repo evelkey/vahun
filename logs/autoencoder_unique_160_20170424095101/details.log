@@ -1,0 +1,6 @@
+Language	Hun
+Wordcount	23
+Unique words	18
+Population size	10
+Encoding dim	160
+Encoder type	autoencoder_unique_with_mark160
