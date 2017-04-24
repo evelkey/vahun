@@ -113,7 +113,7 @@ class logread:
                 plt.plot(lenlist,trainlist,'ro',lenlist,testlist,'g^')
 
                 plt.show()
-    def plot_accuracy(self,filter=""):
+    def plot_accuracy(self,filter="",plot=True,draw=True):
         for i in range(len(self.detaildata)):
             
             lenlist=[]
@@ -133,15 +133,49 @@ class logread:
                     if testlist[-1]>max_accuracy:
                         max_accuracy=testlist[-1]
                         best_config=list(map(int, self.accuracydata[i][j][6:]))
-                plt.plot(sumlist,trainlist,'ro',sumlist,testlist,'g^',sumlist,wordlist,'bx')
+                if plot:
+                    plt.plot(sumlist,trainlist,'ro',sumlist,testlist,'g^',sumlist,wordlist,'bx')
                 print("Max test accuracy:",max_accuracy,
                      "\nMax train accuracy:",max(trainlist),
                      "\nWith config: ",best_config)
-                plt.show()
-                
-                DrawNN([int(best_config[-1]/10)]+[int(item/10) for item in best_config]).draw()
+                if plot:
+                    plt.show()
+                if draw:
+                    DrawNN([int(best_config[-1]/10)]+[int(item/10) for item in best_config]).draw()
+    def get_full_table(self):
+        lenlist=[]
+        uniq=[]
+        names=[]
+        trainlist=[]
+        testlist=[]
+        configs=[]
+        wordlist=[]
+        typelist=[]
+        encodings=[]
+        max_accuracy=0
+        for i in range(len(self.detaildata)):
+            if self.accuracydata[i]!=None:
+                for j in range(len(self.accuracydata[i])):
+                    names.append(self.detaildata[i][0])
+                    encodings.append(float(self.detaildata[i][5][1]))
+                    uniq.append("uniq" in self.detaildata[i][6][1])
+                    typelist.append("var" in self.detaildata[i][6][1] or "var" in self.detaildata[i][0])
+                    lenlist.append(len(self.accuracydata[i][j])-6)
+                    trainlist.append(float(self.accuracydata[i][j][2]))
+                    testlist.append(float(self.accuracydata[i][j][4]))
+                    wordlist.append(float(self.accuracydata[i][j][5]))
+                    configs.append(list(map(int, self.accuracydata[i][j][6:])))
 
-
+        dt = [('Experiment', names),
+         ('Encoded_len',encodings),
+         ('Variational',typelist),
+         ('Uniq',uniq),
+         ('Layernum', lenlist),
+         ('Train_char_acc.', trainlist),
+         ('Test_char_acc.', testlist),
+         ('Test_word_acc.', wordlist),
+         ('Layers', configs)]
+        return pd.DataFrame.from_items(dt)
 
     
 def show_reconstruction(encoder,data,corp,length=0,inputdepth=10,inputfsize=38):
