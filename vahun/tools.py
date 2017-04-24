@@ -150,6 +150,7 @@ class logread:
         testlist=[]
         configs=[]
         wordlist=[]
+        wordnum=[]
         typelist=[]
         encodings=[]
         max_accuracy=0
@@ -157,6 +158,7 @@ class logread:
             if self.accuracydata[i]!=None:
                 for j in range(len(self.accuracydata[i])):
                     names.append(self.detaildata[i][0])
+                    wordnum.append(self.detaildata[i][3][1])
                     encodings.append(float(self.detaildata[i][5][1]))
                     uniq.append("uniq" in self.detaildata[i][6][1])
                     typelist.append("var" in self.detaildata[i][6][1] or "var" in self.detaildata[i][0])
@@ -168,12 +170,13 @@ class logread:
 
         dt = [('Experiment', names),
          ('Encoded_len',encodings),
+         ('Uniq_words', wordnum),
          ('Variational',typelist),
          ('Uniq',uniq),
          ('Layernum', lenlist),
-         ('Train_char_acc.', trainlist),
-         ('Test_char_acc.', testlist),
-         ('Test_word_acc.', wordlist),
+         ('Train_char_acc', trainlist),
+         ('Test_char_acc', testlist),
+         ('Test_word_acc', wordlist),
          ('Layers', configs)]
         return pd.DataFrame.from_items(dt)
 
