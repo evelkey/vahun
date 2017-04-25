@@ -10,44 +10,8 @@ import matplotlib
 from vahun.neuroplot import DrawNN
 import Levenshtein
 
-class Timer:
-    def __init__(self):
-        self.timers=dict()
-    def add(self,str):
-        self.timers[str]=time.time()
-    def get(self,str):
-        return time.time()-self.timers[str]
-
-class explog:
-    def __init__(self,
-                 feature_len,words,
-                 unique_words,lang,
-                 population_size,encoding_dim,
-                 encoder_type,name="",sep="\t"):
-        self.sep=sep
-        self.dir="logs_FINAL/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
-        if not os.path.exists(self.dir):
-            os.makedirs(self.dir)
-            self.logline("details.log",["Language",lang])
-            self.logline("details.log",["Wordcount",words])
-            self.logline("details.log",["Unique words",unique_words])
-            self.logline("details.log",["Population size", population_size])
-            self.logline("details.log",["Encoding dim",encoding_dim])
-            self.logline("details.log",["Encoder type", encoder_type])    
-        else:
-            print("Folder already exists, expanding it.")
-            
-    def logline(self,file,array):
-        string=""
-        for item in array:
-            string+=str(item)
-            string+=self.sep
-        string=string[0:len(string)-1]+"\n"
-        with open(self.dir+'/'+file, "a") as myfile:
-            myfile.write(string)
-            
-class logread:
-    def __init__(self,logdir="logs",sep="\t"):
+class LogReader:
+    def __init__(self,logdir="logs_FINAL",sep="\t"):
         self.logdir=logdir
         self.delimiter=sep
         self.lognames=self.read_all_log_folders()
@@ -106,10 +70,10 @@ class logread:
             sumlist=[]
             if self.fulltraineddata[i]!=None:
                 for j in range(len(self.fulltraineddata[i])):
-                    lenlist.append(len(self.fulltraineddata[i][j])-5)
-                    trainlist.append(float(self.fulltraineddata[i][j][1]))
-                    testlist.append(float(self.fulltraineddata[i][j][3]))
-                    sumlist.append(sum(list(map(int, self.fulltraineddata[i][j][5:]))))
+                    lenlist.append(len(self.fulltraineddata[i][j])-9)
+                    trainlist.append(float(self.fulltraineddata[i][j][3]))
+                    testlist.append(float(self.fulltraineddata[i][j][7]))
+                    sumlist.append(sum(list(map(int, self.fulltraineddata[i][j][9:]))))
                 plt.plot(lenlist,trainlist,'ro',lenlist,testlist,'g^')
 
                 plt.show()
@@ -125,14 +89,14 @@ class logread:
             if self.accuracydata[i]!=None and filter in self.detaildata[i][6][1]:
                 print(self.detaildata[i])
                 for j in range(len(self.accuracydata[i])):
-                    lenlist.append(len(self.accuracydata[i][j])-6)
-                    trainlist.append(float(self.accuracydata[i][j][2]))
-                    testlist.append(float(self.accuracydata[i][j][4]))
-                    wordlist.append(float(self.accuracydata[i][j][5]))
-                    sumlist.append(sum(list(map(int, self.accuracydata[i][j][6:]))))
+                    lenlist.append(len(self.accuracydata[i][j])-9)
+                    trainlist.append(float(self.accuracydata[i][j][3]))
+                    testlist.append(float(self.accuracydata[i][j][7]))
+                    wordlist.append(float(self.accuracydata[i][j][8]))
+                    sumlist.append(sum(list(map(int, self.accuracydata[i][j][9:]))))
                     if testlist[-1]>max_accuracy:
                         max_accuracy=testlist[-1]
-                        best_config=list(map(int, self.accuracydata[i][j][6:]))
+                        best_config=list(map(int, self.accuracydata[i][j][9:]))
                 if plot:
                     plt.plot(sumlist,trainlist,'ro',sumlist,testlist,'g^',sumlist,wordlist,'bx')
                 print("Max test accuracy:",max_accuracy,
@@ -149,10 +113,11 @@ class logread:
         trainlist=[]
         testlist=[]
         configs=[]
-        wordlist=[]
+        testwordlist=[]
         wordnum=[]
         typelist=[]
         encodings=[]
+        validlist=[]
         max_accuracy=0
         for i in range(len(self.detaildata)):
             if self.accuracydata[i]!=None:
@@ -162,10 +127,11 @@ class logread:
                     encodings.append(float(self.detaildata[i][5][1]))
                     uniq.append("uniq" in self.detaildata[i][6][1])
                     typelist.append("var" in self.detaildata[i][6][1] or "var" in self.detaildata[i][0])
-                    lenlist.append(len(self.accuracydata[i][j])-6)
-                    trainlist.append(float(self.accuracydata[i][j][2]))
-                    testlist.append(float(self.accuracydata[i][j][4]))
-                    wordlist.append(float(self.accuracydata[i][j][5]))
+                    lenlist.append(len(self.accuracydata[i][j])-9)
+                    trainlist.append(float(self.accuracydata[i][j][3]))
+                    validlist.append(float(self.accuracydata[i][j][5]))
+                    testlist.append(float(self.accuracydata[i][j][7]))
+                    testwordlist.append(float(self.accuracydata[i][j][8]))
                     configs.append(list(map(int, self.accuracydata[i][j][6:])))
 
         dt = [('Experiment', names),
@@ -175,66 +141,8 @@ class logread:
          ('Uniq',uniq),
          ('Layernum', lenlist),
          ('Train_char_acc', trainlist),
+         ('Valid_char_acc', validlist),
          ('Test_char_acc', testlist),
-         ('Test_word_acc', wordlist),
+         ('Test_word_acc', testwordlist),
          ('Layers', configs)]
         return pd.DataFrame.from_items(dt)
-
-    
-def show_reconstruction(encoder,data,corp,length=0,inputdepth=10,inputfsize=38):
-        enc_list=[]
-        levenshteins=[]
-
-        if isinstance(data,list):
-            handmade=corp.featurize_data_charlevel_onehot(data)
-            data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
-
-        a=data
-        b=(encoder.reconstruct(a))
-
-        for i in range(len(data)):
-            xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
-            xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
-            levenshteins.append(Levenshtein.distance(xa,xb))
-            print(xa,"\t",xb,"\t",levenshteins[-1])
-
-def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=38,encodim=180):
-    enc_list=[]
-    levenshteins=[]
-    if length==0:
-        length=len(data)
-    if isinstance(data,list):
-        handmade=corp.featurize_data_charlevel_onehot(data)
-        data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
-        if length==0:
-            length=len(data)
-    a=data
-    b=(encoder.reconstruct(a))
-    
-    characc=np.ones(inputdepth)*length
-    for i in range(len(data)):
-        xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
-        xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
-        levenshteins.append(Levenshtein.distance(xa,xb))
-        
-        if i<length and printer:
-            print(xa,"\t",xb,"\t",levenshteins[-1])
-        for j in range(inputdepth):
-            if (xa[j]!=xb[j]):
-                characc[j]-=1
-        enc_list.append(encoder.encode([a[i]])[0])
-        if i<length and plot:
-            plt.vlines([i for i in range(len(enc_list[-1]))],[0],enc_list[-1])
-            plt.show()
-    if printer:            
-        print("\nAccuracy on data: ",encoder.char_accuracy(data)*100,"%")
-    if plot:
-        plt.plot([i for i in range(inputdepth)],characc/length)
-        plt.show()
-    
-    #find high dev
-    stds=[np.std([item[i] for item in enc_list]) for i in range(encodim)]
-    if printer:
-        print("average Levenshtein distance: ",np.mean(levenshteins))
-    
-    return stds

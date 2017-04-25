@@ -1,6 +1,4 @@
 import scipy
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import numpy as np
 import collections
@@ -12,7 +10,7 @@ class Autoencoder_ffnn():
                  layerlist,encode_index,
                  optimizer = tf.train.AdamOptimizer(),
                  nonlinear=tf.nn.relu,
-                 disp_step=20,
+                 disp_step=30,
                 charnum=38,
                 maxlen=10):
         """
@@ -127,7 +125,7 @@ class Autoencoder_ffnn():
             
         return np.sum(dists),np.average(dists)
     
-    def train(self,X_train,X_test,batch_size,max_epochs):
+    def train(self,X_train,X_valid,X_test,batch_size,max_epochs):
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
@@ -135,14 +133,18 @@ class Autoencoder_ffnn():
         
         total_batch = int(max_epochs*len(X_train) / batch_size)
         # Loop over all batches
+        start=0
         for i in range(total_batch):
-            batch_xs = self.get_random_block_from_data(X_train, batch_size)
+            start+=batch_size
+            if start+batch_size >= len(X_train):
+                start=0
+            batch_xs = X_train[start:(start + batch_size)]
             cost = self.partial_fit(batch_xs)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:
-                testloss=self.calc_total_cost(X_test)
+                testloss=self.calc_total_cost(X_valid)
                 #early stop
-                self.logger.logline("train.log",["batch",i,"test_loss",testloss])
+                self.logger.logline("train.log",["batch",i,"valid_loss",testloss])
                 testlog.append(testloss)
 
                 if len(testlog)>20:
@@ -158,18 +160,21 @@ class Autoencoder_ffnn():
                     self.logger.logline("early_stop.log",["survived",i])
                     self.logger.logline("early_stop.log",["config"]+self.layerlist)
                     self.logger.logline("early_stop.log",["train_cost",self.calc_total_cost(X_train)])
-                    self.logger.logline("early_stop.log",["test_last_results"]+list(testlog))
+                    self.logger.logline("early_stop.log",["valid_last_results"]+list(testlog))
                     break
         self.logger.logline("train.log",["STOP"])
         #train_loss,test_loss,train_char_acc,train_word_acc,test_char_acc,test_word_acc,config
-        self.logger.logline("accuracy.log",[self.calc_total_cost(X_train),
-                             self.calc_total_cost(X_test),self.char_accuracy(X_train),
-                             self.word_accuracy(X_train),self.char_accuracy(X_test),
+        self.logger.logline("accuracy.log",
+                            [self.calc_total_cost(X_train),
+                             self.calc_total_cost(X_valid),
+                             self.calc_total_cost(X_test),
+                             self.char_accuracy(X_train),
+                             self.word_accuracy(X_train),
+                             self.char_accuracy(X_valid),
+                             self.word_accuracy(X_valid),
+                             self.char_accuracy(X_test),
                              self.word_accuracy(X_test)]+self.layerlist)
                           
-    def get_random_block_from_data(self,data, batch_size):
-        start_index = np.random.randint(0, len(data) - batch_size)
-        return data[start_index:(start_index + batch_size)]
     
     def xavier_init(self,fan_in, fan_out, constant = 1):
         low = -constant * np.sqrt(6.0 / (fan_in + fan_out))

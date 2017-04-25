@@ -7,12 +7,13 @@ import time
 class Corpus:
     def __init__(self,
                 corpus_path,
-                size,
+                size=4000000,
                 language="Hun",
                 needed_corpus=["unique","lower","hun_lower","lower_unique","hun_lower_unique"],
                 encoding_len=10,
                 corpus_stream=None,
-                printer=True):
+                printer=True,
+                new=True):
         """
         Creates corpus object, with the given parameters
         @needed_corpus: list, can contain: "unique","lower","hun_lower","lower_unique","hun_lower_unique"

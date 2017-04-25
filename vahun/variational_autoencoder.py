@@ -118,7 +118,7 @@ class Variational_autoencoder():
             
         return np.sum(dists),np.average(dists)
     
-    def train(self,X_train,X_test,batch_size,max_epochs):
+    def train(self,X_train,X_valid,X_test,batch_size,max_epochs):
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
@@ -131,9 +131,9 @@ class Variational_autoencoder():
             cost = self.partial_fit(batch_xs)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:
-                testloss=self.calc_total_cost(X_test)
+                testloss=self.calc_total_cost(X_valid)
                 #early stop
-                self.logger.logline("train.log",["batch",i,"test_loss",testloss])
+                self.logger.logline("train.log",["batch",i,"valid_loss",testloss])
                 testlog.append(testloss)
 
                 if len(testlog)>20:
@@ -148,14 +148,20 @@ class Variational_autoencoder():
                     self.logger.logline("early_stop.log",["STOPPED"])
                     self.logger.logline("early_stop.log",["survived",i])
                     self.logger.logline("early_stop.log",["train_cost",self.calc_total_cost(X_train)])
-                    self.logger.logline("early_stop.log",["test_last_results"]+list(testlog))
+                    self.logger.logline("early_stop.log",["valid_last_results"]+list(testlog))
                     break
         self.logger.logline("train.log",["STOP"])
         #train_loss,test_loss,train_char_acc,train_word_acc,test_char_acc,test_word_acc,config
-        self.logger.logline("accuracy.log",[self.calc_total_cost(X_train),
-                             self.calc_total_cost(X_test),self.char_accuracy(X_train),
-                             self.word_accuracy(X_train),self.char_accuracy(X_test),
-                             self.word_accuracy(X_test)]+[self.n_hidden,self.n_input])
+        self.logger.logline("accuracy.log",
+                            [self.calc_total_cost(X_train),
+                             self.calc_total_cost(X_valid),
+                             self.calc_total_cost(X_test),
+                             self.char_accuracy(X_train),
+                             self.word_accuracy(X_train),
+                             self.char_accuracy(X_valid),
+                             self.word_accuracy(X_valid),
+                             self.char_accuracy(X_test),
+                             self.word_accuracy(X_test)]+self.layerlist)
                           
     def get_random_block_from_data(self,data, batch_size):
         start_index = np.random.randint(0, len(data) - batch_size)
