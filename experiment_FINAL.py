@@ -58,7 +58,7 @@ def main(args=None):
                         ("top_" if exper[1]==0 else "random_")+
                         ("bigraph_" if exper[2]==1 else "uni_")))
         logger=explog(encoder_type=name,
-                  encoding_dim=0,
+                  encoding_dim=min(settings.weights),
                   feature_len=20,
                   lang=corpus_path,
                   unique_words=len(set(corpus.wordlist)),
