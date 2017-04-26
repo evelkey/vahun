@@ -20,6 +20,11 @@ class experiment:
         self.len=len(weights)
         self.weights=weights
         
+class Settings:
+    def __init__(self,weights):
+        self.len=len(weights)
+        self.weights=weights
+        
 class evolution:
     
     def __init__(self,x_train,x_test,

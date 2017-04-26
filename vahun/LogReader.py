@@ -11,7 +11,7 @@ from vahun.neuroplot import DrawNN
 import Levenshtein
 
 class LogReader:
-    def __init__(self,logdir="logs_FINAL",sep="\t"):
+    def __init__(self,logdir="/mnt/store/velkey/logs",sep="\t"):
         self.logdir=logdir
         self.delimiter=sep
         self.lognames=self.read_all_log_folders()
@@ -36,7 +36,7 @@ class LogReader:
             
     def read_all_log_folders(self):
         lista=[]
-        for filename in os.listdir(os.getcwd()+"/"+self.logdir):
+        for filename in os.listdir(self.logdir):
             lista.append(filename)
         return lista
     def read_train(self,folder):

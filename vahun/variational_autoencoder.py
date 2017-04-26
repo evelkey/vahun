@@ -12,8 +12,8 @@ class Variational_autoencoder():
                  optimizer = tf.train.AdamOptimizer(),
                  nonlinear=tf.sigmoid,
                  disp_step=20,
-                charnum=48,
-                maxlen=10):
+                charnum=0,
+                maxlen=20):
         """
         """
         self.encoding_size=encoding_size

@@ -9,10 +9,9 @@ class Text:
     def __init__(self,
                 corpus_path,
                 size=0, #0 means all of them
-                encoding_len=10, #max size
+                encoding_len=20, #max size
                 printer=True,
-                language="Hun",
-                digraphs=False):
+                language="Hun"):
                   
         self.encoding_len=encoding_len
 

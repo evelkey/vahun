@@ -13,7 +13,7 @@ class Autoencoder_ffnn():
                  nonlinear=tf.nn.relu,
                  disp_step=30,
                 charnum=0,
-                maxlen=10):
+                maxlen=20):
         """
         """
         self.charnum=charnum
@@ -151,7 +151,10 @@ class Autoencoder_ffnn():
             
         return np.average(dists)
     
-    def train(self,X_train,X_valid,X_test,batch_size,max_epochs):
+    def train(self,X_train,X_valid,X_test,batch_size,max_epochs,Y_train=None):
+        if Y_train==None:
+            Y_train=X_train
+            
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
