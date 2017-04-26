@@ -1,0 +1,6 @@
+Language	Hun
+Wordcount	200000
+Unique words	200000
+Population size	1
+Encoding dim	180
+Encoder type	hunfiltered_lowered_uniq_180

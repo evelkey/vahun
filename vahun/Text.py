@@ -24,7 +24,7 @@ class Text:
             size=len(self.df[0].values.tolist())
         # mix the words::
         self.wordlist=list(set(self.df[0].values.tolist()[0:size]))
-        self.abc=self._getabc()
+        self.abc=" " + self._getabc()
         
         self.all_features=self.featurize_data_charlevel_onehot(self.wordlist)
         train=self.all_features[0:int(len(self.all_features)*0.8)]

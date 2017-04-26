@@ -2,22 +2,23 @@ import scipy
 import tensorflow as tf
 import numpy as np
 import collections
+import Levenshtein
 
 class Autoencoder_ffnn():
     def __init__(self,experiment,
                  tf_session, inputdim,
                  logger,
-                 layerlist,encode_index,
+                 layerlist,encode_index,corpus,
                  optimizer = tf.train.AdamOptimizer(),
                  nonlinear=tf.nn.relu,
                  disp_step=30,
-                charnum=38,
+                charnum=0,
                 maxlen=10):
         """
         """
         self.charnum=charnum
         self.maxlen=maxlen
-        
+        self.corpus=corpus
         self.experiment=experiment
         self.logger=logger
         
@@ -76,8 +77,16 @@ class Autoencoder_ffnn():
         cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X})
         return cost
 
-    def calc_total_cost(self, X):
-        return self.sess.run(self.cost, feed_dict = {self.x: X})
+    def calc_total_cost(self, X,batch=2048):
+        cost=0
+        start=0
+        for i in range(int(len(X)/batch)):
+            if start+batch >= len(X):
+                start=0
+            start+=batch
+            batch_xs = X[start:(start + batch)]
+            cost+=self.sess.run(self.cost, feed_dict = {self.x: batch_xs})
+        return cost
 
     def encode(self, X):
         return self.sess.run(self.encoded, feed_dict={self.x: X})
@@ -87,8 +96,25 @@ class Autoencoder_ffnn():
             encoded = np.random.normal(size=self.weights["b1"])
         return self.sess.run(self.reconstruction, feed_dict={self.encoded: encoded})
 
-    def reconstruct(self, X):
-        return self.sess.run(self.reconstruction, feed_dict={self.x: X})
+    def reconstruct(self, X,batch=512):
+        start=0
+        reconstructionl=np.zeros([int(len(X)),self.charnum*self.maxlen])
+        for i in range(int(len(X)/batch)):
+            if start+batch >= len(X):
+                batch_xs = X[start:]
+                start=0
+            else:
+                batch_xs = X[start:(start + batch)]
+                start+=batch
+            leng=len(batch_xs)
+            cur=self.sess.run(self.reconstruction, feed_dict = {self.x: batch_xs})
+            reconstructionl[i*batch:i*batch+leng,:]=(np.reshape(cur,(leng,self.charnum*self.maxlen)))
+        if len(X)<batch:
+            return self.recon(X)
+        return reconstructionl
+    
+    def recon(self,X):
+        return self.sess.run(self.reconstruction, feed_dict = {self.x: X})
     
     def char_accuracy(self,data):
         accuracy_max=len(data)*self.maxlen
@@ -121,16 +147,15 @@ class Autoencoder_ffnn():
         fulldist=0
         avgdist=0
         reconstructed=self.reconstruct(data)
-        dists=[Levenshtein.distance(data[i].reshape((self.maxlen,self.charnum)),reconstructed[i].reshape((self.maxlen,self.charnum))) for i in range(len(data))]
+        dists=[Levenshtein.distance(self.corpus.defeaturize_data_charlevel_onehot([           data[i].reshape((self.maxlen,self.charnum))])[0],self.corpus.defeaturize_data_charlevel_onehot([reconstructed[i].reshape((self.maxlen,self.charnum))])[0]) for i in range(len(data))]
             
-        return np.sum(dists),np.average(dists)
+        return np.average(dists)
     
     def train(self,X_train,X_valid,X_test,batch_size,max_epochs):
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
         self.logger.logline("train.log",["config"]+self.layerlist)
-        
         total_batch = int(max_epochs*len(X_train) / batch_size)
         # Loop over all batches
         start=0
@@ -173,7 +198,10 @@ class Autoencoder_ffnn():
                              self.char_accuracy(X_valid),
                              self.word_accuracy(X_valid),
                              self.char_accuracy(X_test),
-                             self.word_accuracy(X_test)]+self.layerlist)
+                             self.word_accuracy(X_test),
+                             self.levenshtein_distance(X_train),
+                             self.levenshtein_distance(X_valid),
+                             self.levenshtein_distance(X_test)]+self.layerlist)
                           
     
     def xavier_init(self,fan_in, fan_out, constant = 1):

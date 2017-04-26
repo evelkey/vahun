@@ -70,10 +70,10 @@ class LogReader:
             sumlist=[]
             if self.fulltraineddata[i]!=None:
                 for j in range(len(self.fulltraineddata[i])):
-                    lenlist.append(len(self.fulltraineddata[i][j])-9)
+                    lenlist.append(len(self.fulltraineddata[i][j])-12)
                     trainlist.append(float(self.fulltraineddata[i][j][3]))
                     testlist.append(float(self.fulltraineddata[i][j][7]))
-                    sumlist.append(sum(list(map(int, self.fulltraineddata[i][j][9:]))))
+                    sumlist.append(sum(list(map(int, self.fulltraineddata[i][j][12:]))))
                 plt.plot(lenlist,trainlist,'ro',lenlist,testlist,'g^')
 
                 plt.show()
@@ -89,14 +89,14 @@ class LogReader:
             if self.accuracydata[i]!=None and filter in self.detaildata[i][6][1]:
                 print(self.detaildata[i])
                 for j in range(len(self.accuracydata[i])):
-                    lenlist.append(len(self.accuracydata[i][j])-9)
+                    lenlist.append(len(self.accuracydata[i][j])-12)
                     trainlist.append(float(self.accuracydata[i][j][3]))
                     testlist.append(float(self.accuracydata[i][j][7]))
                     wordlist.append(float(self.accuracydata[i][j][8]))
-                    sumlist.append(sum(list(map(int, self.accuracydata[i][j][9:]))))
+                    sumlist.append(sum(list(map(int, self.accuracydata[i][j][12:]))))
                     if testlist[-1]>max_accuracy:
                         max_accuracy=testlist[-1]
-                        best_config=list(map(int, self.accuracydata[i][j][9:]))
+                        best_config=list(map(int, self.accuracydata[i][j][12:]))
                 if plot:
                     plt.plot(sumlist,trainlist,'ro',sumlist,testlist,'g^',sumlist,wordlist,'bx')
                 print("Max test accuracy:",max_accuracy,
@@ -118,6 +118,9 @@ class LogReader:
         typelist=[]
         encodings=[]
         validlist=[]
+        levenshteins_tr=[]
+        levenshteins_te=[]
+        levenshteins_v=[]
         max_accuracy=0
         for i in range(len(self.detaildata)):
             if self.accuracydata[i]!=None:
@@ -125,14 +128,17 @@ class LogReader:
                     names.append(self.detaildata[i][0])
                     wordnum.append(self.detaildata[i][3][1])
                     encodings.append(float(self.detaildata[i][5][1]))
-                    uniq.append("uniq" in self.detaildata[i][6][1])
+                    uniq.append("uniq" in self.detaildata[i][6][1] or "uniq" in self.detaildata[i][0])
                     typelist.append("var" in self.detaildata[i][6][1] or "var" in self.detaildata[i][0])
-                    lenlist.append(len(self.accuracydata[i][j])-9)
+                    lenlist.append(len(self.accuracydata[i][j])-12)
                     trainlist.append(float(self.accuracydata[i][j][3]))
                     validlist.append(float(self.accuracydata[i][j][5]))
                     testlist.append(float(self.accuracydata[i][j][7]))
                     testwordlist.append(float(self.accuracydata[i][j][8]))
-                    configs.append(list(map(int, self.accuracydata[i][j][6:])))
+                    levenshteins_tr.append(float(self.accuracydata[i][j][9]))
+                    levenshteins_v.append(float(self.accuracydata[i][j][10]))
+                    levenshteins_te.append(float(self.accuracydata[i][j][11]))
+                    configs.append(list(map(int, self.accuracydata[i][j][12:])))
 
         dt = [('Experiment', names),
          ('Encoded_len',encodings),
@@ -144,5 +150,9 @@ class LogReader:
          ('Valid_char_acc', validlist),
          ('Test_char_acc', testlist),
          ('Test_word_acc', testwordlist),
+         ('Test_Leven_avg', levenshteins_te),
+         ('Train_Leven_avg', levenshteins_tr),
+         ('Valid_Leven_avg', levenshteins_v),
          ('Layers', configs)]
+ 
         return pd.DataFrame.from_items(dt)

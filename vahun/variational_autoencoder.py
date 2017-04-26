@@ -2,23 +2,27 @@ import scipy
 import tensorflow as tf
 import numpy as np
 import collections
+import Levenshtein
 
 class Variational_autoencoder():
     def __init__(self,
                  tf_session, inputdim,
                  logger,
-                 encoding_size,
+                 encoding_size,corpus,
                  optimizer = tf.train.AdamOptimizer(),
                  nonlinear=tf.sigmoid,
                  disp_step=20,
-                charnum=38,
+                charnum=48,
                 maxlen=10):
         """
         """
+        self.encoding_size=encoding_size
         self.charnum=charnum
         self.maxlen=maxlen
         self.logger=logger
 
+        self.corpus=corpus
+        
         self.n_input = inputdim
         self.n_hidden=encoding_size
         self.display_step=disp_step
@@ -80,8 +84,25 @@ class Variational_autoencoder():
             encoded = np.random.normal(size=self.weights["b1"])
         return self.sess.run(self.reconstruction, feed_dict={self.encoded: encoded})
 
-    def reconstruct(self, X):
-        return self.sess.run(self.reconstruction, feed_dict={self.x: X})
+    def reconstruct(self, X,batch=512):
+        start=0
+        reconstructionl=np.zeros([int(len(X)),self.charnum*self.maxlen])
+        for i in range(int(len(X)/batch)):
+            if start+batch >= len(X):
+                batch_xs = X[start:]
+                start=0
+            else:
+                batch_xs = X[start:(start + batch)]
+                start+=batch
+            leng=len(batch_xs)
+            cur=self.sess.run(self.reconstruction, feed_dict = {self.x: batch_xs})
+            reconstructionl[i*batch:i*batch+leng,:]=(np.reshape(cur,(leng,self.charnum*self.maxlen)))
+        if len(X)<batch:
+            return self.recon(X)
+        return reconstructionl
+    
+    def recon(self,X):
+        return self.sess.run(self.reconstruction, feed_dict = {self.x: X})
     
     def char_accuracy(self,data):
         accuracy_max=len(data)*self.maxlen
@@ -114,7 +135,9 @@ class Variational_autoencoder():
         fulldist=0
         avgdist=0
         reconstructed=self.reconstruct(data)
-        dists=[Levenshtein.distance(data[i].reshape((self.maxlen,self.charnum)),reconstructed[i].reshape((self.maxlen,self.charnum))) for i in range(len(data))]
+        dists=[Levenshtein.distance(self.corpus.defeaturize_data_charlevel_onehot([           data[i].reshape((self.maxlen,self.charnum))])[0],self.corpus.defeaturize_data_charlevel_onehot([reconstructed[i].reshape((self.maxlen,self.charnum))])[0]) for i in range(len(data))]
+            
+        return np.average(dists)
             
         return np.sum(dists),np.average(dists)
     
@@ -125,9 +148,12 @@ class Variational_autoencoder():
         self.logger.logline("train.log",["config"]+[self.n_hidden,self.n_input])
         
         total_batch = int(max_epochs*len(X_train) / batch_size)
-        # Loop over all batches
+        start=0
         for i in range(total_batch):
-            batch_xs = self.get_random_block_from_data(X_train, batch_size)
+            start+=batch_size
+            if start+batch_size >= len(X_train):
+                start=0
+            batch_xs = X_train[start:(start + batch_size)]
             cost = self.partial_fit(batch_xs)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:
@@ -161,12 +187,12 @@ class Variational_autoencoder():
                              self.char_accuracy(X_valid),
                              self.word_accuracy(X_valid),
                              self.char_accuracy(X_test),
-                             self.word_accuracy(X_test)]+self.layerlist)
+                             self.word_accuracy(X_test),
+                             self.levenshtein_distance(X_train),
+                             self.levenshtein_distance(X_valid),
+                             self.levenshtein_distance(X_test),
+                             self.encoding_size,self.charnum*self.maxlen])
                           
-    def get_random_block_from_data(self,data, batch_size):
-        start_index = np.random.randint(0, len(data) - batch_size)
-        return data[start_index:(start_index + batch_size)]
-    
     def xavier_init(self,fan_in, fan_out, constant = 1):
         low = -constant * np.sqrt(6.0 / (fan_in + fan_out))
         high = constant * np.sqrt(6.0 / (fan_in + fan_out))
