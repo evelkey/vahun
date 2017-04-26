@@ -12,17 +12,16 @@ from vahun.genetic import Settings
 
 timer=Timer()
 
-size=200000
+size=0
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 
-corpuses=[Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20'),
-          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20'),
-          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20.digraph_repl'),
-          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20.digraph_repl')]
-
+corpuses=[Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20',size=size),
+          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20',size=size),
+          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20.digraph_repl',size=size),
+          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20.digraph_repl',size=size)]
 exps = []
-ranger=range(20,30)
+ranger=range(10,20)
 i=0
 with open('/mnt/store/velkey/experiments') as f:
     for line in f:
@@ -35,6 +34,7 @@ for exper in exps:
     exper=[int(item) for item in exper]
     layerlist=exper[3:]
     settings=Settings(layerlist)
+    typ=0
     if exper[1]==0 and exper[2]==0:
         corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20'
         typ=0
@@ -74,7 +74,9 @@ for exper in exps:
                                         encoding_size=settings.weights[0],
                                         corpus=corpus,
                                         optimizer =tf.train.AdamOptimizer(learning_rate = 0.001),
-                                        nonlinear=tf.sigmoid)
+                                        nonlinear=tf.sigmoid,charnum=len(corpus.abc))
+
+
     else:
         encoder=Autoencoder_ffnn(
                          experiment=settings,

@@ -73,8 +73,16 @@ class Variational_autoencoder():
         cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X})
         return cost
 
-    def calc_total_cost(self, X):
-        return self.sess.run(self.cost, feed_dict = {self.x: X})
+    def calc_total_cost(self, X,batch=2048):
+        cost=0
+        start=0
+        for i in range(int(len(X)/batch)):
+            if start+batch >= len(X):
+                start=0
+            start+=batch
+            batch_xs = X[start:(start + batch)]
+            cost+=self.sess.run(self.cost, feed_dict = {self.x: batch_xs})
+        return cost
 
     def encode(self, X):
         return self.sess.run(self.encoded, feed_dict={self.x: X})
@@ -182,8 +190,8 @@ class Variational_autoencoder():
                             [self.calc_total_cost(X_train),
                              self.calc_total_cost(X_valid),
                              self.calc_total_cost(X_test),
-                             self.char_accuracy(X_train),
-                             self.word_accuracy(X_train),
+                             self.char_accuracy(X_train[:int(len(X_train)*0.7)]),
+                             self.word_accuracy(X_train[:int(len(X_train)*0.7)]),
                              self.char_accuracy(X_valid),
                              self.word_accuracy(X_valid),
                              self.char_accuracy(X_test),

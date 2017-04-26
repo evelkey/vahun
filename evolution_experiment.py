@@ -27,11 +27,10 @@ def main(args=None):
 	x_test = test.reshape((len(test), np.prod(test.shape[1:])))
 	print(x_train.shape)
 
-	logger=explog(encoder_type="autoencoder_unique_with_mark"+str(encode),
-				  encoding_dim=encode,feature_len=args.feature_len,
-				  lang="Hun",unique_words=len(set(corp.full)),
-				  name="autoencoder_unique_"+str(encode),population_size=popsize,
-				  words=len(corp.hun_lower))
+	corpuses=[Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20',size=size),
+          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20',size=size),
+          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k.maxlen20.digraph_repl',size=size),
+          Text(corpus_path='/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20.digraph_repl',size=size)]
 
 
 	x23=evolution(x_train,x_test,popsize,encode,args.feature_len*38,config,logger=logger)
@@ -44,7 +43,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Autoencoder experiment runner')
 	parser.add_argument('--corp_path', dest='corp_path', type=str,default='/mnt/permanent/Language/Hungarian/Corp/Webkorpusz/webkorpusz.wpl',	 help='Path to the Corpus.')
 	parser.add_argument("--encoding_dim", dest="encoding_dim", default=60, type=int, help='Encoding dimension')
-	parser.add_argument("--corp_len", dest="corp_len", default=2000000, type=int, help="Words to read from corpus")
+	parser.add_argument("--corp_len", dest="corp_len", default=0, type=int, help="Words to read from corpus")
 	parser.add_argument("--pop_size", dest="pop_size", default=10, type=int, help="Population size")
 	parser.add_argument("--feature_len", dest="feature_len", default=10, type=int, help="Feature size")
 	
