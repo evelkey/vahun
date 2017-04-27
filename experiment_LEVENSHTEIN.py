@@ -26,13 +26,13 @@ def levennoise(corpus,word,dist=2):
         if a>0.333 and a<=0.666:
             #append
             r=random.randint(0,len(word))
-            x=random.randint(0,len(corpus.abc))-1
+            x=random.randint(0,len(corpus.abc)-1)
             ch=list(corpus.abc)[x]
             word=word[:r]+ch+word[r:]
         if a>0.666:
             #change
             r=random.randint(0,len(word))
-            x=random.randint(0,len(corpus.abc))-1
+            x=random.randint(0,len(corpus.abc)-1)
             ch=list(corpus.abc)[x]
             word=word[:r]+ch+word[r+1:]
     return word
@@ -110,7 +110,7 @@ def main(args=None):
                                                 corpus=corpus,
                                                 optimizer =tf.train.AdamOptimizer(learning_rate = 0.001),
                                                 nonlinear=tf.sigmoid,charnum=len(corpus.abc))
-
+0
 
             else:
                 encoder=Autoencoder_ffnn(
