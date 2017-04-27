@@ -34,7 +34,7 @@ class Autoencoder_ffnn():
         self._create_layers(nonlinear)
 
         # cost
-        self.cost =  0.5*tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.x), 2.0))
+        self.cost =  0.5*tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.y), 2.0))
         self.optimizer = optimizer.minimize(self.cost)
 
         init = tf.global_variables_initializer()
@@ -64,6 +64,7 @@ class Autoencoder_ffnn():
         """
         """
         self.x = tf.placeholder(tf.float32, [None, self.n_input])
+        self.y = tf.placeholder(tf.float32, [None, self.n_input])
         layer=nonlinearity(tf.add(tf.matmul(self.x, self.weights['w1']), self.weights['b1']))
         self.encoded=layer
         for i in range(1,self.layernum-1):
@@ -73,11 +74,13 @@ class Autoencoder_ffnn():
             
         self.reconstruction=tf.add(tf.matmul(layer, self.weights['w'+str(self.layernum)]), self.weights['b'+str(self.layernum)])
 
-    def partial_fit(self, X):
-        cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X})
+    def partial_fit(self, X, Y):
+        cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X, self.y: Y})
         return cost
 
-    def calc_total_cost(self, X,batch=2048):
+    def calc_total_cost(self, X,Y=None,batch=2048):
+        if Y==None:
+            Y=X
         cost=0
         start=0
         for i in range(int(len(X)/batch)):
@@ -85,7 +88,8 @@ class Autoencoder_ffnn():
                 start=0
             start+=batch
             batch_xs = X[start:(start + batch)]
-            cost+=self.sess.run(self.cost, feed_dict = {self.x: batch_xs})
+            batch_ys = Y[start:(start + batch)]
+            cost+=self.sess.run(self.cost, feed_dict = {self.x: batch_xs,self.y: batch_ys})
         return cost
 
     def encode(self, X):
@@ -167,7 +171,8 @@ class Autoencoder_ffnn():
             if start+batch_size >= len(X_train):
                 start=0
             batch_xs = X_train[start:(start + batch_size)]
-            cost = self.partial_fit(batch_xs)
+            batch_ys = Y_train[start:(start + batch_size)]
+            cost = self.partial_fit(batch_xs,batch_ys)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:
                 testloss=self.calc_total_cost(X_valid)

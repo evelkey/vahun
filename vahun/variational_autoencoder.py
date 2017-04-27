@@ -31,6 +31,7 @@ class Variational_autoencoder():
         self.weights = network_weights  
 
         self.x = tf.placeholder(tf.float32, [None, self.n_input])
+        self.y = tf.placeholder(tf.float32, [None, self.n_input])
         self.z_mean = tf.add(tf.matmul(self.x, self.weights['w1']), self.weights['b1'])
         
         self.z_log_sigma_sq = tf.add(tf.matmul(self.x, self.weights['log_sigma_w1']), self.weights['log_sigma_b1'])
@@ -43,7 +44,7 @@ class Variational_autoencoder():
         self.reconstruction = tf.add(tf.matmul(self.z, self.weights['w2']), self.weights['b2'])
 
         # cost
-        reconstr_loss = 0.5 * tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.x), 2.0))
+        reconstr_loss = 0.5 * tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.y), 2.0))
         latent_loss = -0.5 * tf.reduce_sum(1 + self.z_log_sigma_sq
                                            - tf.square(self.z_mean)
                                            - tf.exp(self.z_log_sigma_sq), 1)
@@ -69,11 +70,13 @@ class Variational_autoencoder():
         all_weights['b2'] = tf.Variable(tf.zeros([self.n_input], dtype=tf.float32))
         return all_weights
 
-    def partial_fit(self, X):
-        cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X})
+    def partial_fit(self, X,Y):
+        cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X,self.y: Y})
         return cost
 
-    def calc_total_cost(self, X,batch=2048):
+    def calc_total_cost(self, X,Y=None,batch=2048):
+        if Y==None:
+            Y=X
         cost=0
         start=0
         for i in range(int(len(X)/batch)):
@@ -81,7 +84,8 @@ class Variational_autoencoder():
                 start=0
             start+=batch
             batch_xs = X[start:(start + batch)]
-            cost+=self.sess.run(self.cost, feed_dict = {self.x: batch_xs})
+            batch_ys = Y[start:(start + batch)]
+            cost+=self.sess.run(self.cost, feed_dict = {self.x: batch_xs,self.y: batch_ys})
         return cost
 
     def encode(self, X):
@@ -149,7 +153,9 @@ class Variational_autoencoder():
             
         return np.sum(dists),np.average(dists)
     
-    def train(self,X_train,X_valid,X_test,batch_size,max_epochs):
+    def train(self,X_train,X_valid,X_test,batch_size,max_epochs,Y_train=None):
+        if Y_train==None:
+            Y_train=X_train
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
@@ -162,7 +168,8 @@ class Variational_autoencoder():
             if start+batch_size >= len(X_train):
                 start=0
             batch_xs = X_train[start:(start + batch_size)]
-            cost = self.partial_fit(batch_xs)
+            batch_ys = Y_train[start:(start + batch_size)]
+            cost = self.partial_fit(batch_xs,batch_ys)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:
                 testloss=self.calc_total_cost(X_valid)
