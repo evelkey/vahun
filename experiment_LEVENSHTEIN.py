@@ -14,7 +14,7 @@ import argparse
 import random
 
 
-def levennoise(corpus,word,dist=2):
+def levennoise(corpus,word,dist=1):
     if len(word)>18:
         return word
     for i in range(dist):
@@ -26,13 +26,13 @@ def levennoise(corpus,word,dist=2):
         if a>0.333 and a<=0.666:
             #append
             r=random.randint(0,len(word))
-            x=random.randint(0,len(corpus.abc)-1)
+            x=random.randint(corpus.abc.find('a'),len(corpus.abc)-1)
             ch=list(corpus.abc)[x]
             word=word[:r]+ch+word[r:]
         if a>0.666:
             #change
             r=random.randint(0,len(word))
-            x=random.randint(0,len(corpus.abc)-1)
+            x=random.randint(corpus.abc.find('a'),len(corpus.abc)-1)
             ch=list(corpus.abc)[x]
             word=word[:r]+ch+word[r+1:]
     return word
@@ -126,7 +126,7 @@ def main(args=None):
                                  nonlinear = tf.sigmoid,
                                  charnum=len(corpus.abc))
 
-            encoder.train(X_levenshtein,corpus.x_valid,corpus.x_test,512,80,Y_train=corpus.x_train)
+            encoder.train(corpus.x_train,corpus.x_valid,corpus.x_test,512,80,X_levenshtein)
 
             print("Finished in:", timer.get("experiment") ,"s")
     

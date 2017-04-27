@@ -75,7 +75,7 @@ class Variational_autoencoder():
         return cost
 
     def calc_total_cost(self, X,Y=None,batch=2048):
-        if Y==None:
+        if Y is None:
             Y=X
         cost=0
         start=0
@@ -153,9 +153,9 @@ class Variational_autoencoder():
             
         return np.sum(dists),np.average(dists)
     
-    def train(self,X_train,X_valid,X_test,batch_size,max_epochs,Y_train=None):
-        if Y_train==None:
-            Y_train=X_train
+    def train(self,Y_train,X_valid,X_test,batch_size,max_epochs,X_train=None):
+        if X_train is None:
+            X_train=Y_train
         breaker=False
         testlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])

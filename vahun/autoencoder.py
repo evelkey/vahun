@@ -155,9 +155,9 @@ class Autoencoder_ffnn():
             
         return np.average(dists)
     
-    def train(self,X_train,X_valid,X_test,batch_size,max_epochs,Y_train=None):
-        if Y_train is None:
-            Y_train=X_train
+    def train(self,Y_train,X_valid,X_test,batch_size,max_epochs,X_train=None):
+        if X_train is None:
+            X_train=Y_train
             
         breaker=False
         testlog=collections.deque(maxlen=30)
