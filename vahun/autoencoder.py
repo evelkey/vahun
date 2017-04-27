@@ -79,7 +79,7 @@ class Autoencoder_ffnn():
         return cost
 
     def calc_total_cost(self, X,Y=None,batch=2048):
-        if Y==None:
+        if Y is None:
             Y=X
         cost=0
         start=0
@@ -156,7 +156,7 @@ class Autoencoder_ffnn():
         return np.average(dists)
     
     def train(self,X_train,X_valid,X_test,batch_size,max_epochs,Y_train=None):
-        if Y_train==None:
+        if Y_train is None:
             Y_train=X_train
             
         breaker=False
@@ -166,12 +166,14 @@ class Autoencoder_ffnn():
         total_batch = int(max_epochs*len(X_train) / batch_size)
         # Loop over all batches
         start=0
+        #print(Y_train.shape,X_train.shape)
         for i in range(total_batch):
             start+=batch_size
             if start+batch_size >= len(X_train):
                 start=0
             batch_xs = X_train[start:(start + batch_size)]
             batch_ys = Y_train[start:(start + batch_size)]
+            #print(batch_xs.shape,batch_ys.shape)
             cost = self.partial_fit(batch_xs,batch_ys)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:

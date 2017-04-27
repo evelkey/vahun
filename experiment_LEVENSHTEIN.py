@@ -38,8 +38,9 @@ def levennoise(corpus,word,dist=2):
     return word
 
 def levenshtein_noisify(corpus):
-    wordlist=[levennoise(corpus,word) for word in corpus.wordlist]
-    return wordlist,corpus.featurize_data_charlevel_onehot(wordlist)
+    wordlist=[levennoise(corpus,word) for word in corpus.wordlist[0:int(len(corpus.wordlist)*0.8)]]
+    co=corpus.featurize_data_charlevel_onehot(wordlist)
+    return wordlist,co.reshape((len(co), np.prod(co.shape[1:])))
 
 def main(args=None):
     timer=Timer()
@@ -56,7 +57,7 @@ def main(args=None):
     exps = []
     ranger=range(args.low,args.high)
     i=0
-    with open('/mnt/store/velkey/levenshteins') as f:
+    with open('/mnt/store/velkey/experiments') as f:
         for line in f:
             if(i in ranger):
                 exps.append(line.strip().split('\t'))
@@ -110,7 +111,7 @@ def main(args=None):
                                                 corpus=corpus,
                                                 optimizer =tf.train.AdamOptimizer(learning_rate = 0.001),
                                                 nonlinear=tf.sigmoid,charnum=len(corpus.abc))
-0
+
 
             else:
                 encoder=Autoencoder_ffnn(
@@ -125,7 +126,7 @@ def main(args=None):
                                  nonlinear = tf.sigmoid,
                                  charnum=len(corpus.abc))
 
-            encoder.train(X_train=X_levenshtein,corpus.x_valid,corpus.x_test,512,80,Y_train=corpus.x_train)
+            encoder.train(X_levenshtein,corpus.x_valid,corpus.x_test,512,80,Y_train=corpus.x_train)
 
             print("Finished in:", timer.get("experiment") ,"s")
     
