@@ -127,7 +127,7 @@ class LogReader:
                 for j in range(len(self.accuracydata[i])):
                     names.append(self.detaildata[i][0])
                     wordnum.append(self.detaildata[i][3][1])
-                    encodings.append(float(self.detaildata[i][5][1]))
+                    
                     uniq.append("uniq" in self.detaildata[i][6][1] or "uniq" in self.detaildata[i][0])
                     typelist.append("var" in self.detaildata[i][6][1] or "var" in self.detaildata[i][0])
                     lenlist.append(len(self.accuracydata[i][j])-12)
@@ -139,6 +139,7 @@ class LogReader:
                     levenshteins_v.append(float(self.accuracydata[i][j][10]))
                     levenshteins_te.append(float(self.accuracydata[i][j][11]))
                     configs.append(list(map(int, self.accuracydata[i][j][12:])))
+                    encodings.append(min(configs[-1]))
 
         dt = [('Experiment', names),
          ('Encoded_len',encodings),
