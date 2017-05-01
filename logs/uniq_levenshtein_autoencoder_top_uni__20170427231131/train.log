@@ -1,0 +1,13 @@
+START
+config	20	960
+batch	0	valid_loss	8970653.8125
+batch	30	valid_loss	4748466.59375
+batch	60	valid_loss	1787601.04688
+batch	90	valid_loss	614651.296875
+batch	120	valid_loss	263789.451172
+batch	150	valid_loss	156543.573242
+batch	180	valid_loss	120235.571289
+batch	210	valid_loss	106976.708984
+batch	240	valid_loss	102118.259766
+batch	270	valid_loss	100396.523438
+batch	300	valid_loss	99835.7324219

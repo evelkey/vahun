@@ -195,8 +195,26 @@ def show_reconstruction(encoder,data,corp,length=0,inputdepth=10,inputfsize=38):
         for i in range(len(data)):
             xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
             xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
-            levenshteins.append(Levenshtein.distance(xa,xb))
+            levenshteinsappend(Levenshtein.distance(xa,xb))
             print(xa,"\t",xb,"\t",levenshteins[-1])
+            
+def get_reconstruction(encoder,data,corp,inputdepth,inputfsize):
+        enc_list=[]
+        result=[]
+
+        if isinstance(data,list):
+            handmade=corp.featurize_data_charlevel_onehot(data)
+            data=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
+
+        a=data
+        b=(encoder.reconstruct(a))
+
+        for i in range(len(data)):
+            xa=corp.defeaturize_data_charlevel_onehot([a[i].reshape(inputdepth,inputfsize)])[0]
+            xb=corp.defeaturize_data_charlevel_onehot([b[i].reshape(inputdepth,inputfsize)])[0]
+            l=Levenshtein.distance(xa,xb)
+            result.append([xa,xb,l])
+        return result
 
 def show_performance(encoder,data,corp,length=0,plot=False,printer=False,inputdepth=10,inputfsize=38,encodim=180):
     enc_list=[]

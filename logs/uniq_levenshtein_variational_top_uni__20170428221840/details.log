@@ -1,0 +1,6 @@
+Language	/mnt/store/velkey/mnsz2/filt.200k.maxlen20
+Wordcount	200000
+Unique words	200000
+Population size	0
+Encoding dim	460
+Encoder type	uniq_levenshtein_variational_top_uni_
