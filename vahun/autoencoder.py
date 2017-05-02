@@ -103,7 +103,7 @@ class Autoencoder_ffnn():
     def reconstruct(self, X,batch=512):
         start=0
         reconstructionl=np.zeros([int(len(X)),self.charnum*self.maxlen])
-        for i in range(int(len(X)/batch)):
+        for i in range(int(len(X)/batch)+1):
             if start+batch >= len(X):
                 batch_xs = X[start:]
                 start=0
