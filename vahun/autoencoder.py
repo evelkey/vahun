@@ -194,7 +194,7 @@ class Autoencoder():
                     self.logger.logline("early_stop.log",["survived",i])
                     self.logger.logline("early_stop.log",["config"]+self.layerlist)
                     self.logger.logline("early_stop.log",["train_cost",self.calc_total_cost(X_train)])
-                    self.logger.logline("early_stop.log",["valid_last_results"]+list(testlog))
+                    self.logger.logline("early_stop.log",["valid_last_results"]+list(validlog))
                     break
         self.logger.logline("train.log",["STOP"])
         #train_loss,test_loss,train_char_acc,train_word_acc,test_char_acc,test_word_acc,config
