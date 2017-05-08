@@ -3,23 +3,26 @@ import tensorflow as tf
 import numpy as np
 import collections
 import Levenshtein
+from vahun.genetic import Settings
 
-class Autoencoder_ffnn():
-    def __init__(self,experiment,
+class Autoencoder():
+    """
+        abstract class
+    """
+    def __init__(self,
                  tf_session, inputdim,
                  logger,
-                 layerlist,encode_index,corpus,
+                 layerlist,
+                 encode_index,
+                 corpus,
                  optimizer = tf.train.AdamOptimizer(),
-                 nonlinear=tf.nn.relu,
+                 nonlinear=tf.nn.sigmoid,
                  disp_step=30,
-                charnum=0,
-                maxlen=20):
-        """
-        """
+                charnum=0):
+        
         self.charnum=charnum
-        self.maxlen=maxlen
+        self.maxlen=int(inputdim/charnum)
         self.corpus=corpus
-        self.experiment=experiment
         self.logger=logger
         
         self.layerlist=layerlist
@@ -27,53 +30,27 @@ class Autoencoder_ffnn():
         self.n_input = inputdim
         self.encode_index=encode_index
         self.display_step=disp_step
-
-        network_weights = self._initialize_weights()
-        self.weights = network_weights  
-
-        self._create_layers(nonlinear)
-
-        # cost
-        self.cost =  0.5*tf.reduce_sum(tf.pow(tf.subtract(self.reconstruction, self.y), 2.0))
-        self.optimizer = optimizer.minimize(self.cost)
-
-        init = tf.global_variables_initializer()
-        self.sess = tf_session
-        self.sess.run(init)
-        self.saver = tf.train.Saver()
+        self.nonlinearity=nonlinear
+        self.optimizer_function=optimizer
+        
+        self.experiment=Settings(self.layerlist)
+          
+        self.create_graph()
         
         self.size=0
         nums=[self.n_input,layerlist]
         for i in range(1,len(nums)):
             self.size+=4*layerlist[i]*layerlist[i-1]
-        
-
-    def _initialize_weights(self):
-        all_weights = dict()
-        
-        all_weights['w1']=tf.Variable(self.xavier_init(self.n_input, self.layerlist[0]))
-        all_weights['b1'] = tf.Variable(tf.random_normal([self.layerlist[0]], dtype=tf.float32))
-        
-        for i in range(1,self.layernum):
-            all_weights['w'+str(i+1)]=tf.Variable(self.xavier_init(self.layerlist[i-1], self.layerlist[i]))
-            all_weights['b'+str(i+1)] = tf.Variable(tf.random_normal([self.layerlist[i]], dtype=tf.float32))
-
-        return all_weights
-    
-    def _create_layers(self,nonlinearity=tf.nn.relu):
-        """
-        """
-        self.x = tf.placeholder(tf.float32, [None, self.n_input])
-        self.y = tf.placeholder(tf.float32, [None, self.n_input])
-        layer=nonlinearity(tf.add(tf.matmul(self.x, self.weights['w1']), self.weights['b1']))
-        self.encoded=layer
-        for i in range(1,self.layernum-1):
-            if i==self.encode_index:
-                self.encoded=layer
-            layer=nonlinearity(tf.add(tf.matmul(layer, self.weights['w'+str(i+1)]), self.weights['b'+str(i+1)]))
             
-        self.reconstruction=tf.add(tf.matmul(layer, self.weights['w'+str(self.layernum)]), self.weights['b'+str(self.layernum)])
+        init = tf.global_variables_initializer()
+        self.sess = tf_session
+        self.sess.run(init)
+        self.saver = tf.train.Saver()
+        
 
+    def create_graph(self):
+        raise NotImplementedError() #class is abstract!!!!!
+        
     def partial_fit(self, X, Y):
         cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict={self.x: X, self.y: Y})
         return cost
@@ -103,7 +80,8 @@ class Autoencoder_ffnn():
     def reconstruct(self, X,batch=512):
         start=0
         reconstructionl=np.zeros([int(len(X)),self.charnum*self.maxlen])
-        for i in range(int(len(X)/batch)):
+    
+        for i in range(int(len(X)/batch)+1):
             if start+batch >= len(X):
                 batch_xs = X[start:]
                 start=0
@@ -111,8 +89,11 @@ class Autoencoder_ffnn():
                 batch_xs = X[start:(start + batch)]
                 start+=batch
             leng=len(batch_xs)
-            cur=self.sess.run(self.reconstruction, feed_dict = {self.x: batch_xs})
-            reconstructionl[i*batch:i*batch+leng,:]=(np.reshape(cur,(leng,self.charnum*self.maxlen)))
+            cur = self.sess.run(self.reconstruction, feed_dict = {self.x: batch_xs})
+            
+            y=np.reshape(cur,(leng,self.charnum*self.maxlen))
+            reconstructionl[i*batch:i*batch+leng,:] = y
+            
         if len(X)<batch:
             return self.recon(X)
         return reconstructionl
@@ -120,53 +101,71 @@ class Autoencoder_ffnn():
     def recon(self,X):
         return self.sess.run(self.reconstruction, feed_dict = {self.x: X})
     
-    def char_accuracy(self,data):
-        accuracy_max=len(data)*self.maxlen
-        accuracy=len(data)*self.maxlen
+    def reconstruction_accuracy(self,dataX,dataY=None):
+        """
+        @return char accuracy, word accuracy, levenshtein avg error
+        """
+        if dataY is None:
+            dataY=dataX
+
+        success=False
+        while(not success):
+            try:
+                reconstructed=self.reconstruct(dataX)
+                success=True
+            except:
+                print("memoryerror during train reconstruction,using only the half data!")
+                dataY=dataY[0:int(len(dataY)/2)]
+                dataX=dataX[0:int(len(dataY)/2)]
+                
+        accuracy_max=len(dataX)*self.maxlen
+        char_accuracy=len(dataX)*self.maxlen
+        word_accuracy=len(dataX)
         
-        reconstructed=self.reconstruct(data)
-        for i in range(len(data)):
-            a=data[i].reshape((self.maxlen,self.charnum))
-            b=reconstructed[i].reshape((self.maxlen,self.charnum))
-            for j in range(self.maxlen):
-                if (a[j,:].argmax()!=b[j,:].argmax()):
-                    accuracy-=1
-        return accuracy/accuracy_max
-    
-    def word_accuracy(self,data):
-        accuracy_max=len(data)
-        accuracy=len(data)
+        levenshtein_error_sum=0
         
-        reconstructed=self.reconstruct(data)
-        for i in range(len(data)):
-            a=data[i].reshape((self.maxlen,self.charnum))
+        for i in range(len(dataX)):
+            a=dataY[i].reshape((self.maxlen,self.charnum))
             b=reconstructed[i].reshape((self.maxlen,self.charnum))
-            for j in range(self.maxlen):
-                if (a[j,:].argmax()!=b[j,:].argmax()):
-                    accuracy-=1
-                    break
-        return accuracy/accuracy_max
-    
-    def levenshtein_distance(self,data):
-        fulldist=0
-        avgdist=0
-        reconstructed=self.reconstruct(data)
-        dists=[Levenshtein.distance(self.corpus.defeaturize_data_charlevel_onehot([           data[i].reshape((self.maxlen,self.charnum))])[0],self.corpus.defeaturize_data_charlevel_onehot([reconstructed[i].reshape((self.maxlen,self.charnum))])[0]) for i in range(len(data))]
             
-        return np.average(dists)
+            word_ok=True
+            
+            for j in range(self.maxlen):
+                if (a[j,:].argmax()!=b[j,:].argmax()):
+                    char_accuracy-=1
+                    word_ok=False
+            if (not word_ok):
+                word_accuracy-=1   
+                
+            levenshtein_error_sum+=Levenshtein.distance(
+                self.corpus.defeaturize_data_charlevel_onehot([a])[0],
+                self.corpus.defeaturize_data_charlevel_onehot([b])[0])
+                
+        characc=char_accuracy/accuracy_max
+        wordacc=word_accuracy/len(dataX)
+
+        return characc,wordacc,levenshtein_error_sum/len(dataX)
     
-    def train(self,Y_train,X_valid,X_test,batch_size,max_epochs,X_train=None):
-        if X_train is None:
-            X_train=Y_train
+    def train(self,
+              X_train,X_valid,X_test,
+              batch_size=512,max_epochs=50,
+              Y_train=None, Y_valid=None, Y_test=None):
+        
+        if Y_train is None:
+            Y_train = X_train
+        if Y_valid is None:
+            Y_valid = X_valid
+        if Y_test is None:
+            Y_test = X_test
             
         breaker=False
-        testlog=collections.deque(maxlen=30)
+        validlog=collections.deque(maxlen=30)
         self.logger.logline("train.log",["START"])
         self.logger.logline("train.log",["config"]+self.layerlist)
         total_batch = int(max_epochs*len(X_train) / batch_size)
         # Loop over all batches
         start=0
-        #print(Y_train.shape,X_train.shape)
+
         for i in range(total_batch):
             start+=batch_size
             if start+batch_size >= len(X_train):
@@ -177,15 +176,15 @@ class Autoencoder_ffnn():
             cost = self.partial_fit(batch_xs,batch_ys)
             #avg_cost += cost/ batch_size
             if i % self.display_step==0:
-                testloss=self.calc_total_cost(X_valid)
+                validloss=self.calc_total_cost(X=X_valid,Y=Y_valid)
                 #early stop
-                self.logger.logline("train.log",["batch",i,"valid_loss",testloss])
-                testlog.append(testloss)
+                self.logger.logline("train.log",["batch",i,"valid_loss",validloss])
+                validlog.append(validloss)
 
-                if len(testlog)>20:
+                if len(validlog)>20:
                     breaker=True
                     for j in range(10):
-                         if testlog[-j]<testlog[-10-j]:
+                         if validlog[-j]<validlog[-10-j]:
                             breaker=False
                 else:
                     breaker=False
@@ -195,24 +194,28 @@ class Autoencoder_ffnn():
                     self.logger.logline("early_stop.log",["survived",i])
                     self.logger.logline("early_stop.log",["config"]+self.layerlist)
                     self.logger.logline("early_stop.log",["train_cost",self.calc_total_cost(X_train)])
-                    self.logger.logline("early_stop.log",["valid_last_results"]+list(testlog))
+                    self.logger.logline("early_stop.log",["valid_last_results"]+list(validlog))
                     break
         self.logger.logline("train.log",["STOP"])
         #train_loss,test_loss,train_char_acc,train_word_acc,test_char_acc,test_word_acc,config
+
+        Vchar,Vword,Vleven=self.reconstruction_accuracy(dataX=X_valid,dataY=Y_valid)
+        Testchar,Testword,Testleven=self.reconstruction_accuracy(dataX=X_test,dataY=Y_test)
+        Trainchar,Trainword,Trainleven=self.reconstruction_accuracy(dataX=X_train,dataY=Y_train)
+        
         self.logger.logline("accuracy.log",
                             [self.calc_total_cost(X_train),
                              self.calc_total_cost(X_valid),
                              self.calc_total_cost(X_test),
-                             self.char_accuracy(X_train),
-                             self.word_accuracy(X_train),
-                             self.char_accuracy(X_valid),
-                             self.word_accuracy(X_valid),
-                             self.char_accuracy(X_test),
-                             self.word_accuracy(X_test),
-                             self.levenshtein_distance(X_train),
-                             self.levenshtein_distance(X_valid),
-                             self.levenshtein_distance(X_test)]+self.layerlist)
-                          
+                             Trainchar,
+                             Trainword,
+                             Vchar,
+                             Vword,
+                             Testchar,
+                             Testword,
+                             Trainleven,
+                             Vleven,
+                             Testleven]+self.layerlist)                  
     
     def xavier_init(self,fan_in, fan_out, constant = 1):
         low = -constant * np.sqrt(6.0 / (fan_in + fan_out))
@@ -225,4 +228,51 @@ class Autoencoder_ffnn():
         
     def load(self,path):
         self.saver.restore(self.sess, path)
+            
+    def get_reconstruction_splitbrain(self,dataX,corp,dataY=None):
+        if dataY is None:
+            dataY=dataX
+            
+        enc_list=[]
+        result=[]
 
+        if isinstance(dataX,list):
+            handmade=corp.featurize_data_charlevel_onehot(dataX)
+            dataX=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
+        if isinstance(dataY,list):
+            handmade=corp.featurize_data_charlevel_onehot(dataY)
+            dataY=handmade.reshape((len(handmade), np.prod(handmade.shape[1:])))
+
+        a=dataX
+        b=self.reconstruct(a)
+        
+        inputlen=int(self.n_input/self.charnum)
+        for i in range(len(dataX)):
+            xa=corp.defeaturize_data_charlevel_onehot(
+                [a[i].reshape(inputlen,self.charnum)])[0]
+            y=corp.defeaturize_data_charlevel_onehot(
+                [b[i].reshape(inputlen,self.charnum)])[0]
+            ya=corp.defeaturize_data_charlevel_onehot(
+                [dataY[i].reshape(inputlen,self.charnum)])[0]
+            l=Levenshtein.distance(ya,y)
+            stri=""
+            striorig=""
+            fullword=""
+            origword=""
+            for i in range(inputlen):
+                stri+=' '
+                striorig+=' '
+            stri=list(stri)
+            striorig=list(striorig)
+            for i in range(1,inputlen):
+                if xa[-i]=='_':
+                    stri[-i]=y[-i]
+                    striorig[-i]=ya[-i]
+                else:
+                    stri[-i]=xa[-i]
+                    striorig[-i]=xa[-i]
+            for i in range(inputlen):
+                fullword+=stri[i]
+                origword+=striorig[i]
+            result.append([xa,ya,y,origword,fullword,l])
+        return result

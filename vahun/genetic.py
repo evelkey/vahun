@@ -1,6 +1,5 @@
 from random import randint, random
 import collections
-from vahun.autoencoder import Autoencoder_ffnn
 import tensorflow as tf
 from vahun.tools import Timer
 

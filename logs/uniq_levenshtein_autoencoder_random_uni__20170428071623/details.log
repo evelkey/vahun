@@ -1,0 +1,6 @@
+Language	/mnt/store/velkey/mnsz2/filt.200k_random.maxlen20
+Wordcount	200000
+Unique words	200000
+Population size	0
+Encoding dim	20
+Encoder type	uniq_levenshtein_autoencoder_random_uni_
