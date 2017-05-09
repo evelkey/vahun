@@ -29,7 +29,7 @@ def main(args=None):
     
     
     exps = []
-    for i in range(1,50):
+    for i in range(10,50):
         exps.append([0,args.type,i*20,args.feature_len*len(Xcorpus.abc)])
         exps.append([1,args.type,i*20,args.feature_len*len(Xcorpus.abc)])
         
