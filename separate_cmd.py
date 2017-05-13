@@ -14,6 +14,19 @@ from vahun.Autoencoder_FFNN import Autoencoder_FFNN
 from vahun.Autoencoder_Variational import Autoencoder_Variational
 import fileinput
 
+def mindistance(encoder,inputword):
+    inw=inputword.replace(' ','')
+    mindist=1000000000.1
+    x=encoder.corpus.featurize_data_charlevel_onehot([inw]).reshape((1, 960))
+    decode=""
+    for i in range(1,len(inw)-1):
+        ow=inw[0:i]+'+'+inw[i:len(inw)]
+        y=encoder.corpus.featurize_data_charlevel_onehot([ow]).reshape((1, 960))
+        dist=encoder.sess.run(encoder.cost, feed_dict = {encoder.x: x,encoder.y: y})
+        if dist<mindist:
+            mindist=dist
+            decode=ow
+    return decode
 
 def main(args=None):
     timer=Timer()
@@ -45,11 +58,11 @@ def main(args=None):
 
     encoder.load(args.graph_path)
     inputlist=[str(line).replace('\n','') for line in fileinput.input('-')]
-    result=encoder.get_reconstruction_splitbrain(inputlist,corpus,inputlist)
+    
 
     with open('/mnt/store/velkey/output/log.txt', "a") as myfile:
-        for it in result:
-            print(it[2])
+        for it in inputlist:
+            print(mindistance(encoder,it))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Segmentation command line runner')
