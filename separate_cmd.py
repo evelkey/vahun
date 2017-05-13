@@ -21,7 +21,7 @@ def mindistance(encoder,inputword):
     decode=""
     for i in range(1,len(inw)):
         ow=inw[0:i]+'+'+inw[i:len(inw)+1]
-        print(ow)
+        #print(ow)
         y=encoder.corpus.featurize_data_charlevel_onehot([ow]).reshape((1, 960))
         dist=encoder.sess.run(encoder.cost, feed_dict = {encoder.x: x,encoder.y: y})
         if dist < mindist:
