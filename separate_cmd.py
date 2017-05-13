@@ -18,7 +18,7 @@ import fileinput
 def main(args=None):
     timer=Timer()
     corpus=Corpus(' +-.abCcDdeEfgGhijkLlmNnopqrsSTtuvwxyZzáéíóöúüőű',20)
-    encode=500
+    encode=args.encode
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     logger=explog(encoder_type="demo_autoencoder_segmented_"+str(encode),
@@ -43,9 +43,8 @@ def main(args=None):
                      nonlinear=tf.sigmoid,disp_step=40,
                      charnum=len(corpus.abc))
 
-    encoder.load("/mnt/store/velkey/graphs/auto500.graph")
+    encoder.load(args.graph_path)
     inputlist=[str(line).replace('\n','') for line in fileinput.input('-')]
-
     result=encoder.get_reconstruction_splitbrain(inputlist,corpus,inputlist)
 
     with open('/mnt/store/velkey/output/log.txt', "a") as myfile:
@@ -56,7 +55,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Segmentation command line runner')
     parser.add_argument('-i','--input', type=argparse.FileType('r'),default='-',help="Input stream")
     
-    parser.add_argument('--corp_path', dest='corp_path', type=str,default="/mnt/store/velkey/graphs/auto500.graph",help='Path to the Corpus.')
+    parser.add_argument('--graph_path', dest='graph_path', type=str,default="/mnt/store/velkey/graphs/auto500.graph",help='Path to the Corpus.')
     parser.add_argument('--encode', dest='encode', type=int,help='Number of neurons in encoder layer')
     
     args = parser.parse_args()

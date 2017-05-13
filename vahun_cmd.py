@@ -15,7 +15,7 @@ from vahun.variational_autoencoder import Variational_autoencoder
 from vahun.tools import show_performance
 from vahun.tools import show_reconstruction
 import argparse
-import fileinput
+
 
 
 def main(args=None):
