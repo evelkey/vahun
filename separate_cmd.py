@@ -19,11 +19,12 @@ def mindistance(encoder,inputword):
     mindist=1000000000.1
     x=encoder.corpus.featurize_data_charlevel_onehot([inw]).reshape((1, 960))
     decode=""
-    for i in range(1,len(inw)-1):
-        ow=inw[0:i]+'+'+inw[i:len(inw)]
+    for i in range(1,len(inw)):
+        ow=inw[0:i]+'+'+inw[i:len(inw)+1]
+        print(ow)
         y=encoder.corpus.featurize_data_charlevel_onehot([ow]).reshape((1, 960))
         dist=encoder.sess.run(encoder.cost, feed_dict = {encoder.x: x,encoder.y: y})
-        if dist<mindist:
+        if dist < mindist:
             mindist=dist
             decode=ow
     return decode
