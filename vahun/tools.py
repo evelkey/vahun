@@ -21,9 +21,9 @@ class explog:
                  feature_len,words,
                  unique_words,lang,
                  population_size,encoding_dim,
-                 encoder_type,name="",sep="\t"):
+                 encoder_type,name="",sep="\t",path="/mnt/store/velkey/logs/"):
         self.sep=sep
-        self.dir="/mnt/store/velkey/logs/"+name+"_"+time.strftime("%Y%m%d%H%M%S")
+        self.dir=path+name+"_"+time.strftime("%Y%m%d%H%M%S")
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
             self.logline("details.log",["Language",lang])

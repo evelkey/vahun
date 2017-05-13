@@ -7,6 +7,11 @@ import pandas as pd
 import random
 
 class Corpus:
+    def __init__(self,abc,feature_len):
+        self.abc=abc
+        self.encoding_len=feature_len
+        self.maxlen=feature_len
+        
     def filter_wordlist_maxlen(self):
         newwordlist=[]
         if isinstance(self.wordlist[0],list):
