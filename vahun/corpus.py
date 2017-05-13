@@ -4,12 +4,24 @@ import collections
 import numpy as np
 import time
 import pandas as pd
+import random
 
 class Corpus:
+    def filter_wordlist_maxlen(self):
+        newwordlist=[]
+        if isinstance(self.wordlist[0],list):
+            for i in range(len(self.wordlist)):
+                if(len(self.wordlist[i][0])<self.maxlen and len(self.wordlist[i][1])<self.maxlen):
+                    newwordlist.append(self.wordlist[i])
+            self.wordlist=newwordlist
+            
+    def shuffle(self):
+        random.shuffle(self.wordlist)
+    
     def _getabc(self):
         abc=set()
         for word in self.wordlist:
-            if type(word) is not float:
+            if type(word) is str:
                 for char in word:
                     abc.add(char)
         return "".join(sorted(abc, key=str.lower))
@@ -85,6 +97,64 @@ class TSV_Corpus(Corpus):
         self.df=None
         self.all_features=None
         
+        
+class TrainXY_Corpus(Corpus):
+    
+    def _getabc(self):
+        abc=set()
+        for words in self.wordlist:
+            for char in words[1]:
+                abc.add(char)
+        return "".join(sorted(abc, key=str.lower))
+    
+    
+    def __init__(self,
+                corpus_path,
+                size=0, #0 means all of them
+                encoding_len=20, #max size
+                printer=True,
+                language="Hun"):
+                  
+        self.encoding_len=encoding_len
+        self.maxlen=encoding_len
+
+        self.printer=printer
+        
+        self.df = pd.read_csv(corpus_path, delimiter='\t',header=None)
+        if size==0:
+            size=len(self.df[col].values.tolist())
+        # mix the words::
+        adf=self.df.values.tolist()
+        self.wordlist=[[str(adf[i][0]),str(adf[i][1])] for i in range(0,size)]
+        self.shuffle()
+        
+        self.filter_wordlist_maxlen()
+        self.abc=" " + self._getabc()
+        
+        self.all_features=self.featurize_data_charlevel_onehot(
+                            [self.wordlist[i][0] for i in range(len(self.wordlist))])
+        train=self.all_features[0:int(len(self.all_features)*0.8)]
+        valid=self.all_features[int(len(self.all_features)*0.8):int(len(self.all_features)*0.9)]
+        test=self.all_features[int(len(self.all_features)*0.9):len(self.all_features)]
+        self.x_train = train.reshape((len(train), np.prod(train.shape[1:])))
+        self.x_valid= valid.reshape((len(valid), np.prod(valid.shape[1:])))
+        self.x_test = test.reshape((len(test), np.prod(test.shape[1:])))
+        
+        self.all_features=self.featurize_data_charlevel_onehot(
+                [self.wordlist[i][1] for i in range(len(self.wordlist))])
+        self.df=None
+        train=self.all_features[0:int(len(self.all_features)*0.8)]
+        valid=self.all_features[int(len(self.all_features)*0.8):int(len(self.all_features)*0.9)]
+        test=self.all_features[int(len(self.all_features)*0.9):len(self.all_features)]
+        self.y_train = train.reshape((len(train), np.prod(train.shape[1:])))
+        self.y_valid= valid.reshape((len(valid), np.prod(valid.shape[1:])))
+        self.y_test = test.reshape((len(test), np.prod(test.shape[1:])))
+
+        self.df=None
+        self.all_features=None
+        
+
+
 class WPL_Corpus:
     def __init__(self,
                 corpus_path,

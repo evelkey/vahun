@@ -1,6 +1,6 @@
 import sys
 import tensorflow as tf
-from vahun.corpus import TSV_Corpus as Corpus
+from vahun.corpus import TrainXY_Corpus as Corpus
 import numpy as np
 from vahun.tools import Timer
 from vahun.tools import explog
@@ -24,14 +24,13 @@ def main(args=None):
                  '/mnt/store/velkey/mnsz2/brain_split.200k.maxlen20',
                  '/mnt/store/velkey/mnsz2/webcorp.full.enfilt.segmented']
 
-    Xcorpus=Corpus(corpus_path=corpus_list[args.type],col=0,size=size)
-    Ycorpus=Corpus(corpus_path=corpus_list[args.type],col=1,size=size)
+    corpus=Corpus(corpus_path=corpus_list[args.type],size=size)
     
     
     exps = []
-    for i in range(10,50):
-        exps.append([0,args.type,i*20,args.feature_len*len(Xcorpus.abc)])
-        exps.append([1,args.type,i*20,args.feature_len*len(Xcorpus.abc)])
+    for i in range(1,50):
+        exps.append([0,args.type,i*20,args.feature_len*len(corpus.abc)])
+        exps.append([1,args.type,i*20,args.feature_len*len(corpus.abc)])
         
     for exper in exps:
         exper=[int(item) for item in exper]
@@ -44,10 +43,10 @@ def main(args=None):
                   encoding_dim=min(layerlist),
                   feature_len=args.feature_len,
                   lang=corpus_list[args.type],
-                  unique_words=len(set(Xcorpus.wordlist)),
+                  unique_words=len(corpus.wordlist),
                   name=name,
                   population_size=0,
-                  words=len(Xcorpus.wordlist))
+                  words=len(corpus.wordlist))
               
         for k in range(2):
             print("starting experiment: ",exper)
@@ -60,25 +59,25 @@ def main(args=None):
             if(exper[0]==1):
                 encoder=Autoencoder_Variational(
                     logger=logger,tf_session=sess,
-                    inputdim=len(Xcorpus.abc)*args.feature_len,
+                    inputdim=len(corpus.abc)*args.feature_len,
                     layerlist=layerlist,
-                    encode_index=1,corpus=Xcorpus,
+                    encode_index=1,corpus=corpus,
                     optimizer =tf.train.AdamOptimizer(learning_rate = 0.001),
                     nonlinear=tf.sigmoid,disp_step=50,
-                    charnum=len(Xcorpus.abc))
+                    charnum=len(corpus.abc))
             else:
                 encoder=Autoencoder_FFNN(
                      logger=logger,tf_session=sess,
-                     inputdim=len(Xcorpus.abc)*args.feature_len,
+                     inputdim=len(corpus.abc)*args.feature_len,
                      layerlist=layerlist,
-                     encode_index=1,corpus=Xcorpus,
+                     encode_index=1,corpus=corpus,
                      optimizer =tf.train.AdamOptimizer(learning_rate = 0.001),
                      nonlinear=tf.sigmoid,disp_step=50,
-                     charnum=len(Xcorpus.abc))
+                     charnum=len(corpus.abc))
 
-            encoder.train(Xcorpus.x_train,Xcorpus.x_valid,Xcorpus.x_test,
+            encoder.train(corpus.x_train,corpus.x_valid,corpus.x_test,
                           512,40,
-                          Ycorpus.x_train,Ycorpus.x_valid,Ycorpus.x_test)
+                          corpus.y_train,corpus.y_valid,corpus.y_test)
 
             print("Finished in:", timer.get("experiment") ,"s")
     
